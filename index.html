@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monday Doubles RSVP</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h1 { text-align: center; }
+    .response-form { margin-bottom: 20px; }
+    .player-list { margin-top: 20px; }
+    .group-title { font-weight: bold; margin-top: 20px; }
+    ul { list-style-type: none; padding-left: 0; }
+    li { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Monday Night Doubles RSVP</h1>
+  <p style="text-align: center; font-weight: bold;">For: <span id="currentMonday"></span></p>
+  <div class="response-form">
+    <label for="name">Select Your Name:</label><br>
+    <select id="name">
+      <option value="">-- Select your name --</option>
+      <option>Matt H.</option>
+      <option>Mike R.</option>
+      <option>Chris B.</option>
+      <option>Andre L.</option>
+      <option>Brian K.</option>
+      <option>John D.</option>
+      <option>Steve C.</option>
+      <option>Kevin M.</option>
+      <option>Tony W.</option>
+      <option>Derek S.</option>
+      <option>Rob J.</option>
+      <option>Nate P.</option>
+    </select>
+    <br><br>
+    <button onclick="submitResponse('in')">I'm IN for Monday</button>
+    <button onclick="submitResponse('out')">I'm OUT this week</button>
+  </div>
+
+  <div class="player-list">
+    <div class="group-title">✅ Confirmed Groups of 4</div>
+    <ul id="in-groups"></ul>
+
+    <div class="group-title">🕓 Pending Players</div>
+    <ul id="pending"></ul>
+
+    <div class="group-title">🚫 Out This Week</div>
+    <ul id="out"></ul>
+  </div>
+
+  <script>
+    const rsvpKey = "mondayDoublesRSVP";
+
+    function autoClearOnWednesday() {
+      const lastCleared = localStorage.getItem("lastCleared");
+      const now = new Date();
+      const todayIsWednesday = now.getDay() === 3;
+
+      if (todayIsWednesday && lastCleared !== now.toDateString()) {
+        localStorage.removeItem(rsvpKey);
+        localStorage.setItem("lastCleared", now.toDateString());
+      }
+    }
+
+    function getUpcomingMonday() {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const diffToMonday = (8 - dayOfWeek) % 7;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() + diffToMonday);
+      return monday.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+
+    function loadResponses() {
+      const data = JSON.parse(localStorage.getItem(rsvpKey)) || [];
+      data.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+      const inPlayers = data.filter(p => p.status === "in");
+      const outPlayers = data.filter(p => p.status === "out");
+
+      const groupList = document.getElementById("in-groups");
+      const pendingList = document.getElementById("pending");
+      const outList = document.getElementById("out");
+
+      groupList.innerHTML = "";
+      pendingList.innerHTML = "";
+      outList.innerHTML = "";
+
+      for (let i = 0; i < inPlayers.length; i++) {
+        const li = document.createElement("li");
+        li.textContent = `${i + 1}. ${inPlayers[i].name}`;
+        if (i < Math.floor(inPlayers.length / 4) * 4) {
+          groupList.appendChild(li);
+        } else {
+          pendingList.appendChild(li);
+        }
+      }
+
+      outPlayers.forEach((p, i) => {
+        const li = document.createElement("li");
+        li.textContent = p.name;
+        outList.appendChild(li);
+      });
+    }
+
+    function submitResponse(status) {
+      const nameInput = document.getElementById("name");
+      const name = nameInput.value.trim();
+      if (!name || name.length < 3) {
+        alert("Please select a valid name.");
+        return;
+      }
+
+      const data = JSON.parse(localStorage.getItem(rsvpKey)) || [];
+
+      // Remove any existing entry for that name
+      const filtered = data.filter(p => p.name.toLowerCase() !== name.toLowerCase());
+      filtered.push({ name, status, time: new Date().toISOString() });
+      localStorage.setItem(rsvpKey, JSON.stringify(filtered));
+
+      nameInput.value = "";
+      loadResponses();
+    }
+
+    autoClearOnWednesday();
+    document.getElementById("currentMonday").textContent = getUpcomingMonday();
+    loadResponses();
+  </script>
+</body>
+</html>
