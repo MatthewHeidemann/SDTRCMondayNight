@@ -7,15 +7,28 @@
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     h1 { text-align: center; }
-    .admin-controls { margin-top: 30px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    .admin-controls { display: none; margin-top: 30px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
     .admin-controls h2 { margin-top: 0; }
     .admin-controls button { margin: 5px 0; }
     .name-list { margin-top: 10px; }
+    .home-button { text-align: center; margin-top: 20px; }
+    .home-button a { display: inline-block; padding: 8px 12px; background: #0070f3; color: white; text-decoration: none; border-radius: 5px; }
+    .login-box { text-align: center; margin-top: 50px; }
+    .login-box input { padding: 8px; margin: 5px; width: 200px; }
+    .login-box button { padding: 8px 12px; }
   </style>
 </head>
 <body>
   <h1>Monday Doubles Admin</h1>
-  <div class="admin-controls">
+
+  <div class="login-box" id="loginBox">
+    <p><strong>Admin Access</strong></p>
+    <input type="password" id="adminPassword" placeholder="Enter password" />
+    <br>
+    <button onclick="checkPassword()">Login</button>
+  </div>
+
+  <div class="admin-controls" id="adminControls">
     <h2>Manage RSVP List</h2>
     <button onclick="clearRSVPs()">❌ Clear All Submissions</button>
     <br><br>
@@ -33,15 +46,31 @@
     </div>
   </div>
 
+  <div class="home-button">
+    <a href="index.html">⬅ Back to RSVP Page</a>
+  </div>
+
   <script>
     const nameListKey = "mondayDoublesNames";
     const rsvpKey = "mondayDoublesRSVP";
+    const adminPassword = "letmein"; // change this to your preferred password
 
     const defaultNames = [
       "Matt H.", "Mike R.", "Chris B.", "Andre L.", "Brian K.",
       "John D.", "Steve C.", "Kevin M.", "Tony W.", "Derek S.",
       "Rob J.", "Nate P."
     ];
+
+    function checkPassword() {
+      const input = document.getElementById("adminPassword").value;
+      if (input === adminPassword) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("adminControls").style.display = "block";
+        renderNameList();
+      } else {
+        alert("Incorrect password.");
+      }
+    }
 
     function getNames() {
       return JSON.parse(localStorage.getItem(nameListKey)) || defaultNames;
@@ -97,9 +126,6 @@
       let names = getNames().filter(name => name !== nameToRemove);
       saveNames(names);
     }
-
-    // Initialize admin page
-    renderNameList();
   </script>
 </body>
 </html>
