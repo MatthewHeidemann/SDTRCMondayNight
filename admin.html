@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monday Doubles Admin</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h1 { text-align: center; }
+    .admin-controls { margin-top: 30px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    .admin-controls h2 { margin-top: 0; }
+    .admin-controls button { margin: 5px 0; }
+    .name-list { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Monday Doubles Admin</h1>
+  <div class="admin-controls">
+    <h2>Manage RSVP List</h2>
+    <button onclick="clearRSVPs()">❌ Clear All Submissions</button>
+    <br><br>
+    <h2>Edit Player Dropdown</h2>
+    <label for="newName">Add Name:</label><br>
+    <input type="text" id="newName" placeholder="e.g. Alex G." />
+    <button onclick="addName()">➕ Add</button>
+    <br><br>
+    <label for="removeName">Remove Name:</label><br>
+    <select id="removeName"></select>
+    <button onclick="removeName()">➖ Remove</button>
+    <div class="name-list">
+      <h3>Current Names</h3>
+      <ul id="currentNames"></ul>
+    </div>
+  </div>
+
+  <script>
+    const nameListKey = "mondayDoublesNames";
+    const rsvpKey = "mondayDoublesRSVP";
+
+    const defaultNames = [
+      "Matt H.", "Mike R.", "Chris B.", "Andre L.", "Brian K.",
+      "John D.", "Steve C.", "Kevin M.", "Tony W.", "Derek S.",
+      "Rob J.", "Nate P."
+    ];
+
+    function getNames() {
+      return JSON.parse(localStorage.getItem(nameListKey)) || defaultNames;
+    }
+
+    function saveNames(names) {
+      localStorage.setItem(nameListKey, JSON.stringify(names));
+      renderNameList();
+    }
+
+    function renderNameList() {
+      const names = getNames();
+      const removeSelect = document.getElementById("removeName");
+      const listEl = document.getElementById("currentNames");
+      removeSelect.innerHTML = "";
+      listEl.innerHTML = "";
+      names.forEach(name => {
+        const option = document.createElement("option");
+        option.textContent = name;
+        removeSelect.appendChild(option);
+
+        const li = document.createElement("li");
+        li.textContent = name;
+        listEl.appendChild(li);
+      });
+    }
+
+    function clearRSVPs() {
+      localStorage.removeItem(rsvpKey);
+      alert("All RSVP submissions cleared.");
+    }
+
+    function addName() {
+      const input = document.getElementById("newName");
+      const newName = input.value.trim();
+      if (!newName || newName.length < 3) {
+        alert("Enter a valid name (at least 3 characters).");
+        return;
+      }
+      let names = getNames();
+      if (names.includes(newName)) {
+        alert("This name already exists.");
+        return;
+      }
+      names.push(newName);
+      saveNames(names);
+      input.value = "";
+    }
+
+    function removeName() {
+      const removeSelect = document.getElementById("removeName");
+      const nameToRemove = removeSelect.value;
+      let names = getNames().filter(name => name !== nameToRemove);
+      saveNames(names);
+    }
+
+    // Initialize admin page
+    renderNameList();
+  </script>
+</body>
+</html>
