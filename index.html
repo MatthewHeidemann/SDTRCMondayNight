@@ -9,26 +9,30 @@
   <script src="./firebase.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: auto; max-width: 900px; padding: 20px; }
-    nav a { margin: 0 10px; cursor: pointer; font-weight: bold; }
+    nav a, .admin-nav a { margin: 0 10px; cursor: pointer; font-weight: bold; display: inline-block; }
     .view { display: none; margin-top: 30px; }
     .active { display: block; }
     .section-title { font-weight: bold; margin-top: 20px; }
     .player { padding-left: 20px; }
+    .admin-nav { margin-top: 10px; display: none; }
   </style>
 </head>
 <body>
 
 <h1>🎾 Monday Night Doubles</h1>
 
-<nav>
-  <a onclick="showView('rsvp')">RSVP</a>
-  <a onclick="showView('admin')">Admin</a>
-  <a onclick="showView('weeklyAdmin')">Weekly Admin</a>
-  <a onclick="showView('results')">Results</a>
+<nav id="main-nav">
+  <a id="main-tab" onclick="showView(currentMainTab)">Loading...</a>
+  <a onclick="showAdminNav()">Admin ▾</a>
 </nav>
 
+<div class="admin-nav" id="admin-subnav">
+  <a onclick="showView('weeklyAdmin')">Weekly Admin</a>
+  <a onclick="showView('admin')">Application Admin</a>
+</div>
+
 <!-- RSVP View -->
-<div id="rsvp" class="view active">
+<div id="rsvp" class="view">
   <h2>RSVP for Next Monday</h2>
   <div>
     <label for="player-name">Select your name:</label>
@@ -69,16 +73,22 @@
 
 <!-- Results View -->
 <div id="results" class="view">
-  <h2>Final Results (coming soon)</h2>
+  <h2>Final Results</h2>
   <p>This section will show finalized player groupings and court assignments.</p>
 </div>
 
 <script>
   const db = firebase.database();
+  let currentMainTab = "rsvp";
 
   function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+  }
+
+  function showAdminNav() {
+    document.getElementById("admin-subnav").style.display = "block";
+    showView("weeklyAdmin");
   }
 
   function getMondayDate() {
@@ -143,13 +153,10 @@
     db.ref("users").once("value").then(snapshot => {
       const players = snapshot.val();
       const dropdown = document.getElementById("player-name");
-
-      // Clear previous options except placeholder
       dropdown.innerHTML = '<option value="">-- Choose your name --</option>';
-
       if (!players) return;
       const sortedKeys = Object.keys(players).sort((a, b) => players[a].localeCompare(players[b]));
-    for (const key of sortedKeys) {
+      for (const key of sortedKeys) {
         const opt = document.createElement("option");
         opt.value = players[key];
         opt.text = players[key];
@@ -197,10 +204,21 @@
     });
   }
 
-  // Initialize page
+  function checkLockState() {
+    const weekKey = getMondayDate();
+    db.ref("state/" + weekKey + "/locked").once("value").then(snapshot => {
+      const locked = snapshot.val() === true;
+      currentMainTab = locked ? "results" : "rsvp";
+      document.getElementById("main-tab").innerText = locked ? "Results" : "RSVP";
+      showView(currentMainTab);
+    });
+  }
+
+  // Initialize
   loadPlayers();
   loadResponses();
   loadPlayerList();
+  checkLockState();
 </script>
 
 </body>
