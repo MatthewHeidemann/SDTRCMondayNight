@@ -4,129 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Monday Night Doubles</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
-  function loadPlayerList() {
-    db.ref("users").once("value").then(snapshot => {
-      const players = snapshot.val();
-      const listDiv = document.getElementById("player-list");
-      listDiv.innerHTML = "";
-      if (!players) return;
-      Object.entries(players).forEach(([key, name]) => {
-        const div = document.createElement("div");
-        div.innerHTML = `${name} <button onclick="removePlayer('${key}')">Remove</button>`;
-        listDiv.appendChild(div);
-      });
-    });
-  }
-
-  function addPlayer() {
-    const name = document.getElementById("new-player-name").value.trim();
-    if (!name) return alert("Enter a valid name");
-    db.ref("users").push(name).then(() => {
-      document.getElementById("new-player-name").value = "";
-      loadPlayers();
-      loadPlayerList();
-    });
-  }
-
-  function removePlayer(key) {
-    db.ref("users/" + key).remove().then(() => {
-      loadPlayers();
-      loadPlayerList();
-    });
-  }
-
-  function resetResponses() {
-    const weekKey = getMondayDate();
-    db.ref("responses/" + weekKey).remove().then(() => {
-      document.getElementById("reset-status").innerText = "This week's responses have been cleared.";
-      loadResponses();
-    });
-  }
-
-</script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js">
-  function loadPlayerList() {
-    db.ref("users").once("value").then(snapshot => {
-      const players = snapshot.val();
-      const listDiv = document.getElementById("player-list");
-      listDiv.innerHTML = "";
-      if (!players) return;
-      Object.entries(players).forEach(([key, name]) => {
-        const div = document.createElement("div");
-        div.innerHTML = `${name} <button onclick="removePlayer('${key}')">Remove</button>`;
-        listDiv.appendChild(div);
-      });
-    });
-  }
-
-  function addPlayer() {
-    const name = document.getElementById("new-player-name").value.trim();
-    if (!name) return alert("Enter a valid name");
-    db.ref("users").push(name).then(() => {
-      document.getElementById("new-player-name").value = "";
-      loadPlayers();
-      loadPlayerList();
-    });
-  }
-
-  function removePlayer(key) {
-    db.ref("users/" + key).remove().then(() => {
-      loadPlayers();
-      loadPlayerList();
-    });
-  }
-
-  function resetResponses() {
-    const weekKey = getMondayDate();
-    db.ref("responses/" + weekKey).remove().then(() => {
-      document.getElementById("reset-status").innerText = "This week's responses have been cleared.";
-      loadResponses();
-    });
-  }
-
-</script>
-  <script src="./firebase.js">
-  function loadPlayerList() {
-    db.ref("users").once("value").then(snapshot => {
-      const players = snapshot.val();
-      const listDiv = document.getElementById("player-list");
-      listDiv.innerHTML = "";
-      if (!players) return;
-      Object.entries(players).forEach(([key, name]) => {
-        const div = document.createElement("div");
-        div.innerHTML = `${name} <button onclick="removePlayer('${key}')">Remove</button>`;
-        listDiv.appendChild(div);
-      });
-    });
-  }
-
-  function addPlayer() {
-    const name = document.getElementById("new-player-name").value.trim();
-    if (!name) return alert("Enter a valid name");
-    db.ref("users").push(name).then(() => {
-      document.getElementById("new-player-name").value = "";
-      loadPlayers();
-      loadPlayerList();
-    });
-  }
-
-  function removePlayer(key) {
-    db.ref("users/" + key).remove().then(() => {
-      loadPlayers();
-      loadPlayerList();
-    });
-  }
-
-  function resetResponses() {
-    const weekKey = getMondayDate();
-    db.ref("responses/" + weekKey).remove().then(() => {
-      document.getElementById("reset-status").innerText = "This week's responses have been cleared.";
-      loadResponses();
-    });
-  }
-
-</script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="./firebase.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: auto; max-width: 900px; padding: 20px; }
     nav a { margin: 0 10px; cursor: pointer; font-weight: bold; }
@@ -179,7 +59,6 @@
   <div class="section-title">Reset Weekly Responses:</div>
   <button onclick="resetResponses()">Reset This Week</button>
   <div id="reset-status"></div>
-  <p>This section will allow you to add/remove users and reset weekly responses.</p>
 </div>
 
 <!-- Weekly Admin View -->
@@ -260,7 +139,6 @@
     });
   }
 
-  
   function loadPlayers() {
     db.ref("users").once("value").then(snapshot => {
       const players = snapshot.val();
@@ -278,12 +156,6 @@
       }
     });
   }
-    });
-  }
-
-  loadPlayers();
-  loadPlayerList();
-  loadResponses();
 
   function loadPlayerList() {
     db.ref("users").once("value").then(snapshot => {
@@ -324,6 +196,10 @@
     });
   }
 
+  // Initialize page
+  loadPlayers();
+  loadResponses();
+  loadPlayerList();
 </script>
 
 </body>
