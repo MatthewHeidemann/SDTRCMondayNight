@@ -148,7 +148,8 @@
       dropdown.innerHTML = '<option value="">-- Choose your name --</option>';
 
       if (!players) return;
-      for (const key in players) {
+      const sortedKeys = Object.keys(players).sort((a, b) => players[a].localeCompare(players[b]));
+    for (const key of sortedKeys) {
         const opt = document.createElement("option");
         opt.value = players[key];
         opt.text = players[key];
@@ -163,7 +164,7 @@
       const listDiv = document.getElementById("player-list");
       listDiv.innerHTML = "";
       if (!players) return;
-      Object.entries(players).forEach(([key, name]) => {
+      Object.entries(players).sort((a, b) => a[1].localeCompare(b[1])).forEach(([key, name]) => {
         const div = document.createElement("div");
         div.innerHTML = `${name} <button onclick="removePlayer('${key}')">Remove</button>`;
         listDiv.appendChild(div);
