@@ -1,6 +1,4 @@
-<!-- Version: full-app-v2 -->
-<!-- Version: full-app-v1 -->
-<!-- Version: RSVP-debug-v2 -->
+<!-- Version: full-app-v3 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,34 +14,73 @@
     .active { display: block; }
     .section-title { font-weight: bold; margin-top: 20px; }
     .player { padding-left: 20px; }
+    .admin-nav { margin-top: 10px; display: none; }
+    #login-section { float: right; }
   </style>
 </head>
 <body>
 
 <h1>🎾 Monday Night Doubles</h1>
-<div style='text-align:right; font-size:12px; color:#666;'>Version: full-app-v1</div>
 
-<div class="view active" id="rsvp">
+<nav>
+  <a id="main-tab" onclick="showView(currentMainTab)">Loading...</a>
+  <a onclick="showAdminNav()">Admin ▾</a>
+  <span id="login-section">
+    <input type="password" id="admin-password" placeholder="Admin Password">
+    <button onclick="login()">Login</button>
+  </span>
+</nav>
+
+<div class="admin-nav" id="admin-subnav">
+  <a onclick="showView('weeklyAdmin')">Weekly Admin</a>
+  <a onclick="showView('admin')">Application Admin</a>
+</div>
+
+<!-- RSVP -->
+<div id="rsvp" class="view active">
   <h2>RSVP</h2>
-  <div>
-    <label for="player-name">Select your name:</label>
-    <select id="player-name">
-      <option value="">-- Choose your name --</option>
-    </select><br><br>
-    <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label><br>
-    <label><input type="radio" name="status" value="No"> No, not this week</label><br>
-    <button onclick="submitResponse()">Submit / Update</button>
-  </div>
-  <div class="section-title">In:</div>
-  <div id="in-list"></div>
-  <div class="section-title">Pending:</div>
-  <div id="pending-list"></div>
-  <div class="section-title">Out:</div>
-  <div id="out-list"></div>
+  <label for="player-name">Select your name:</label>
+  <select id="player-name"><option value="">-- Choose your name --</option></select><br><br>
+  <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label><br>
+  <label><input type="radio" name="status" value="No"> No, not this week</label><br>
+  <button onclick="submitResponse()">Submit</button>
+  <div class="section-title">In:</div><div id="in-list"></div>
+  <div class="section-title">Pending:</div><div id="pending-list"></div>
+  <div class="section-title">Out:</div><div id="out-list"></div>
+</div>
+
+<!-- Admin -->
+<div id="admin" class="view">
+  <h2>Application Admin</h2>
+  <input type="text" id="new-player-name" placeholder="Enter player name">
+  <button onclick="addPlayer()">Add Player</button>
+  <div class="section-title">Current Players:</div><div id="player-list"></div>
+  <button onclick="resetResponses()">Reset This Week</button><div id="reset-status"></div>
+</div>
+
+<!-- Weekly Admin -->
+<div id="weeklyAdmin" class="view">
+  <h2>Weekly Admin (coming soon)</h2>
+</div>
+
+<!-- Results -->
+<div id="results" class="view">
+  <h2>Final Results (coming soon)</h2>
 </div>
 
 <script>
   const db = firebase.database();
+  let currentMainTab = "rsvp";
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function showAdminNav() {
+    document.getElementById("admin-subnav").style.display = "block";
+    showView("weeklyAdmin");
+  }
 
   function getMondayDate() {
     const today = new Date();
@@ -117,8 +154,83 @@
     });
   }
 
+  function loadPlayerList() {
+    db.ref("users").once("value").then(snapshot => {
+      const players = snapshot.val();
+      const listDiv = document.getElementById("player-list");
+      listDiv.innerHTML = "";
+      if (!players) return;
+      Object.entries(players).sort((a, b) => a[1].localeCompare(b[1])).forEach(([key, name]) => {
+        const div = document.createElement("div");
+        div.innerHTML = `${name} <button onclick="removePlayer('${key}')">Remove</button>`;
+        listDiv.appendChild(div);
+      });
+    });
+  }
+
+  function addPlayer() {
+    const name = document.getElementById("new-player-name").value.trim();
+    if (!name) return alert("Enter a valid name");
+    db.ref("users").push(name).then(() => {
+      document.getElementById("new-player-name").value = "";
+      loadPlayers();
+      loadPlayerList();
+    });
+  }
+
+  function removePlayer(key) {
+    db.ref("users/" + key).remove().then(() => {
+      loadPlayers();
+      loadPlayerList();
+    });
+  }
+
+  function resetResponses() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).remove().then(() => {
+      document.getElementById("reset-status").innerText = "This week's responses have been cleared.";
+      loadResponses();
+    });
+  }
+
+  function checkLockState() {
+    const weekKey = getMondayDate();
+    db.ref("state/" + weekKey + "/locked").once("value").then(snapshot => {
+      const locked = snapshot.val() === true;
+      currentMainTab = locked ? "results" : "rsvp";
+      document.getElementById("main-tab").innerText = locked ? "Results" : "RSVP";
+      showView(currentMainTab);
+    });
+  }
+
+  function login() {
+    const input = document.getElementById("admin-password").value;
+    if (input === "tennis123") {
+      localStorage.setItem("admin-auth", "true");
+      unlockAdminUI();
+    } else {
+      alert("Incorrect password.");
+    }
+  }
+
+  function unlockAdminUI() {
+    document.getElementById("admin-subnav").style.display = "block";
+    document.getElementById("login-section").style.display = "none";
+  }
+
+  function checkAuth() {
+    if (localStorage.getItem("admin-auth") === "true") {
+      unlockAdminUI();
+    } else {
+      document.getElementById("admin-subnav").style.display = "none";
+    }
+  }
+
   loadPlayers();
   loadResponses();
+  loadPlayerList();
+  checkLockState();
+  checkAuth();
 </script>
 
 </body>
