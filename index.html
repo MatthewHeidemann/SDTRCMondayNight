@@ -30,6 +30,62 @@
     }
   }
 
+
+  let allPlayers = [];
+  let mainGroup = [];
+  let walkOns = [[], [], []];
+
+  function lockWeek() {
+    const weekKey = getMondayDate();
+    db.ref("state/" + weekKey).update({ locked: true }).then(() => {
+      document.getElementById("lock-confirm").innerText = "Submissions locked for the week.";
+      checkLockState();
+    });
+  }
+
+  function loadWeeklyAdminPlayers() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      allPlayers = Object.entries(data)
+        .filter(([_, val]) => val.status === "Yes")
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)
+        .map(([name]) => name);
+
+      mainGroup = [...allPlayers];
+      walkOns = [[], [], []];
+      renderGroups();
+    });
+  }
+
+  function renderGroups() {
+    document.getElementById("main-play").innerHTML = mainGroup.map((name, i) =>
+      `<div>${name}
+        <button onclick="moveToWalkOn(${i}, 0)">→ Walk-On 1</button>
+        <button onclick="moveToWalkOn(${i}, 1)">→ Walk-On 2</button>
+        <button onclick="moveToWalkOn(${i}, 2)">→ Walk-On 3</button>
+      </div>`).join("");
+
+    walkOns.forEach((group, index) => {
+      document.getElementById("walkon" + (index + 1)).innerHTML = group.map((name, i) =>
+        `<div>${name} <button onclick="moveToMain(${index}, ${i})">← Back</button></div>`).join("");
+    });
+  }
+
+  function moveToWalkOn(index, groupIndex) {
+    const player = mainGroup.splice(index, 1)[0];
+    walkOns[groupIndex].push(player);
+    renderGroups();
+  }
+
+  function moveToMain(groupIndex, playerIndex) {
+    const player = walkOns[groupIndex].splice(playerIndex, 1)[0];
+    mainGroup.push(player);
+    renderGroups();
+  }
+
 </script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js">
   const ADMIN_PASSWORD = "tennis123";
@@ -57,6 +113,62 @@
     }
   }
 
+
+  let allPlayers = [];
+  let mainGroup = [];
+  let walkOns = [[], [], []];
+
+  function lockWeek() {
+    const weekKey = getMondayDate();
+    db.ref("state/" + weekKey).update({ locked: true }).then(() => {
+      document.getElementById("lock-confirm").innerText = "Submissions locked for the week.";
+      checkLockState();
+    });
+  }
+
+  function loadWeeklyAdminPlayers() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      allPlayers = Object.entries(data)
+        .filter(([_, val]) => val.status === "Yes")
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)
+        .map(([name]) => name);
+
+      mainGroup = [...allPlayers];
+      walkOns = [[], [], []];
+      renderGroups();
+    });
+  }
+
+  function renderGroups() {
+    document.getElementById("main-play").innerHTML = mainGroup.map((name, i) =>
+      `<div>${name}
+        <button onclick="moveToWalkOn(${i}, 0)">→ Walk-On 1</button>
+        <button onclick="moveToWalkOn(${i}, 1)">→ Walk-On 2</button>
+        <button onclick="moveToWalkOn(${i}, 2)">→ Walk-On 3</button>
+      </div>`).join("");
+
+    walkOns.forEach((group, index) => {
+      document.getElementById("walkon" + (index + 1)).innerHTML = group.map((name, i) =>
+        `<div>${name} <button onclick="moveToMain(${index}, ${i})">← Back</button></div>`).join("");
+    });
+  }
+
+  function moveToWalkOn(index, groupIndex) {
+    const player = mainGroup.splice(index, 1)[0];
+    walkOns[groupIndex].push(player);
+    renderGroups();
+  }
+
+  function moveToMain(groupIndex, playerIndex) {
+    const player = walkOns[groupIndex].splice(playerIndex, 1)[0];
+    mainGroup.push(player);
+    renderGroups();
+  }
+
 </script>
   <script src="./firebase.js">
   const ADMIN_PASSWORD = "tennis123";
@@ -82,6 +194,62 @@
     } else {
       document.getElementById("admin-subnav").style.display = "none";
     }
+  }
+
+
+  let allPlayers = [];
+  let mainGroup = [];
+  let walkOns = [[], [], []];
+
+  function lockWeek() {
+    const weekKey = getMondayDate();
+    db.ref("state/" + weekKey).update({ locked: true }).then(() => {
+      document.getElementById("lock-confirm").innerText = "Submissions locked for the week.";
+      checkLockState();
+    });
+  }
+
+  function loadWeeklyAdminPlayers() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      allPlayers = Object.entries(data)
+        .filter(([_, val]) => val.status === "Yes")
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)
+        .map(([name]) => name);
+
+      mainGroup = [...allPlayers];
+      walkOns = [[], [], []];
+      renderGroups();
+    });
+  }
+
+  function renderGroups() {
+    document.getElementById("main-play").innerHTML = mainGroup.map((name, i) =>
+      `<div>${name}
+        <button onclick="moveToWalkOn(${i}, 0)">→ Walk-On 1</button>
+        <button onclick="moveToWalkOn(${i}, 1)">→ Walk-On 2</button>
+        <button onclick="moveToWalkOn(${i}, 2)">→ Walk-On 3</button>
+      </div>`).join("");
+
+    walkOns.forEach((group, index) => {
+      document.getElementById("walkon" + (index + 1)).innerHTML = group.map((name, i) =>
+        `<div>${name} <button onclick="moveToMain(${index}, ${i})">← Back</button></div>`).join("");
+    });
+  }
+
+  function moveToWalkOn(index, groupIndex) {
+    const player = mainGroup.splice(index, 1)[0];
+    walkOns[groupIndex].push(player);
+    renderGroups();
+  }
+
+  function moveToMain(groupIndex, playerIndex) {
+    const player = walkOns[groupIndex].splice(playerIndex, 1)[0];
+    mainGroup.push(player);
+    renderGroups();
   }
 
 </script>
@@ -151,6 +319,24 @@
 
 <!-- Weekly Admin View -->
 <div id="weeklyAdmin" class="view">
+<h2>Weekly Admin</h2>
+<button onclick="lockWeek()">Lock Submissions for the Week</button>
+<div id="lock-confirm" style="margin: 10px 0; color: green;"></div>
+
+<h3>Main Play Group</h3>
+<input type="text" id="main-label" placeholder="e.g. Courts 1–4"><br>
+<div id="main-play" class="group-box"></div>
+
+<h3>Walk-On Courts</h3>
+<div>
+  <input type="text" id="walkon1-label" placeholder="Walk-On Court 1 Label"><br>
+  <div id="walkon1" class="group-box"></div>
+  <input type="text" id="walkon2-label" placeholder="Walk-On Court 2 Label"><br>
+  <div id="walkon2" class="group-box"></div>
+  <input type="text" id="walkon3-label" placeholder="Walk-On Court 3 Label"><br>
+  <div id="walkon3" class="group-box"></div>
+</div>
+
   <h2>Weekly Admin (coming soon)</h2>
   <p>This section will allow you to lock RSVPs and assign players to courts.</p>
 </div>
@@ -303,6 +489,7 @@
   loadResponses();
   loadPlayerList();
   checkLockState();
+  loadWeeklyAdminPlayers();
   checkAuth();
 
   const ADMIN_PASSWORD = "tennis123";
@@ -328,6 +515,62 @@
     } else {
       document.getElementById("admin-subnav").style.display = "none";
     }
+  }
+
+
+  let allPlayers = [];
+  let mainGroup = [];
+  let walkOns = [[], [], []];
+
+  function lockWeek() {
+    const weekKey = getMondayDate();
+    db.ref("state/" + weekKey).update({ locked: true }).then(() => {
+      document.getElementById("lock-confirm").innerText = "Submissions locked for the week.";
+      checkLockState();
+    });
+  }
+
+  function loadWeeklyAdminPlayers() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      allPlayers = Object.entries(data)
+        .filter(([_, val]) => val.status === "Yes")
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)
+        .map(([name]) => name);
+
+      mainGroup = [...allPlayers];
+      walkOns = [[], [], []];
+      renderGroups();
+    });
+  }
+
+  function renderGroups() {
+    document.getElementById("main-play").innerHTML = mainGroup.map((name, i) =>
+      `<div>${name}
+        <button onclick="moveToWalkOn(${i}, 0)">→ Walk-On 1</button>
+        <button onclick="moveToWalkOn(${i}, 1)">→ Walk-On 2</button>
+        <button onclick="moveToWalkOn(${i}, 2)">→ Walk-On 3</button>
+      </div>`).join("");
+
+    walkOns.forEach((group, index) => {
+      document.getElementById("walkon" + (index + 1)).innerHTML = group.map((name, i) =>
+        `<div>${name} <button onclick="moveToMain(${index}, ${i})">← Back</button></div>`).join("");
+    });
+  }
+
+  function moveToWalkOn(index, groupIndex) {
+    const player = mainGroup.splice(index, 1)[0];
+    walkOns[groupIndex].push(player);
+    renderGroups();
+  }
+
+  function moveToMain(groupIndex, playerIndex) {
+    const player = walkOns[groupIndex].splice(playerIndex, 1)[0];
+    mainGroup.push(player);
+    renderGroups();
   }
 
 </script>
