@@ -4,9 +4,87 @@
 <head>
   <meta charset="UTF-8">
   <title>Monday Night Doubles</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="./firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
+  const ADMIN_PASSWORD = "tennis123";
+
+  function login() {
+    const input = document.getElementById("admin-password").value;
+    if (input === ADMIN_PASSWORD) {
+      localStorage.setItem("admin-auth", "true");
+      unlockAdminUI();
+    } else {
+      alert("Incorrect password.");
+    }
+  }
+
+  function unlockAdminUI() {
+    document.getElementById("admin-subnav").style.display = "block";
+    document.getElementById("login-section").style.display = "none";
+  }
+
+  function checkAuth() {
+    if (localStorage.getItem("admin-auth") === "true") {
+      unlockAdminUI();
+    } else {
+      document.getElementById("admin-subnav").style.display = "none";
+    }
+  }
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js">
+  const ADMIN_PASSWORD = "tennis123";
+
+  function login() {
+    const input = document.getElementById("admin-password").value;
+    if (input === ADMIN_PASSWORD) {
+      localStorage.setItem("admin-auth", "true");
+      unlockAdminUI();
+    } else {
+      alert("Incorrect password.");
+    }
+  }
+
+  function unlockAdminUI() {
+    document.getElementById("admin-subnav").style.display = "block";
+    document.getElementById("login-section").style.display = "none";
+  }
+
+  function checkAuth() {
+    if (localStorage.getItem("admin-auth") === "true") {
+      unlockAdminUI();
+    } else {
+      document.getElementById("admin-subnav").style.display = "none";
+    }
+  }
+
+</script>
+  <script src="./firebase.js">
+  const ADMIN_PASSWORD = "tennis123";
+
+  function login() {
+    const input = document.getElementById("admin-password").value;
+    if (input === ADMIN_PASSWORD) {
+      localStorage.setItem("admin-auth", "true");
+      unlockAdminUI();
+    } else {
+      alert("Incorrect password.");
+    }
+  }
+
+  function unlockAdminUI() {
+    document.getElementById("admin-subnav").style.display = "block";
+    document.getElementById("login-section").style.display = "none";
+  }
+
+  function checkAuth() {
+    if (localStorage.getItem("admin-auth") === "true") {
+      unlockAdminUI();
+    } else {
+      document.getElementById("admin-subnav").style.display = "none";
+    }
+  }
+
+</script>
   <style>
     body { font-family: Arial, sans-serif; margin: auto; max-width: 900px; padding: 20px; }
     nav a, .admin-nav a { margin: 0 10px; cursor: pointer; font-weight: bold; display: inline-block; }
@@ -24,6 +102,12 @@
 <nav id="main-nav">
   <a id="main-tab" onclick="showView(currentMainTab)">Loading...</a>
   <a onclick="showAdminNav()">Admin ▾</a>
+
+<span id="login-section" style="float:right;">
+  <input type="password" id="admin-password" placeholder="Admin Password">
+  <button onclick="login()">Login</button>
+</span>
+
 </nav>
 
 <div class="admin-nav" id="admin-subnav">
@@ -219,6 +303,33 @@
   loadResponses();
   loadPlayerList();
   checkLockState();
+  checkAuth();
+
+  const ADMIN_PASSWORD = "tennis123";
+
+  function login() {
+    const input = document.getElementById("admin-password").value;
+    if (input === ADMIN_PASSWORD) {
+      localStorage.setItem("admin-auth", "true");
+      unlockAdminUI();
+    } else {
+      alert("Incorrect password.");
+    }
+  }
+
+  function unlockAdminUI() {
+    document.getElementById("admin-subnav").style.display = "block";
+    document.getElementById("login-section").style.display = "none";
+  }
+
+  function checkAuth() {
+    if (localStorage.getItem("admin-auth") === "true") {
+      unlockAdminUI();
+    } else {
+      document.getElementById("admin-subnav").style.display = "none";
+    }
+  }
+
 </script>
 
 </body>
