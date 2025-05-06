@@ -1,138 +1,124 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monday Doubles RSVP</title>
+  <meta charset="UTF-8">
+  <title>Monday Night Doubles – RSVP</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="./firebase.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
     h1 { text-align: center; }
-    .response-form { margin-bottom: 20px; }
-    .player-list { margin-top: 20px; }
-    .group-title { font-weight: bold; margin-top: 20px; }
-    ul { list-style-type: none; padding-left: 0; }
-    li { margin-bottom: 5px; }
-    .admin-link { text-align: center; margin-top: 30px; }
-    .admin-link a { display: inline-block; padding: 8px 12px; background: #0070f3; color: white; text-decoration: none; border-radius: 5px; }
+    .form-section { margin-top: 30px; }
+    .section-title { font-weight: bold; margin-top: 20px; }
+    .player { padding-left: 20px; }
   </style>
 </head>
 <body>
-  <h1>Monday Night Doubles RSVP</h1>
-  <p style="text-align: center; font-weight: bold;">For: <span id="currentMonday"></span></p>
-  <div class="response-form">
-    <label for="name">Select Your Name:</label><br>
-    <select id="name">
-      <option value="">-- Select your name --</option>
-      <option>Matt H.</option>
-      <option>Mike R.</option>
-      <option>Chris B.</option>
-      <option>Andre L.</option>
-      <option>Brian K.</option>
-      <option>John D.</option>
-      <option>Steve C.</option>
-      <option>Kevin M.</option>
-      <option>Tony W.</option>
-      <option>Derek S.</option>
-      <option>Rob J.</option>
-      <option>Nate P.</option>
-    </select>
-    <br><br>
-    <button onclick="submitResponse('in')">I'm IN for Monday</button>
-    <button onclick="submitResponse('out')">I'm OUT this week</button>
-  </div>
 
-  <div class="player-list">
-    <div class="group-title">✅ Confirmed Groups of 4</div>
-    <ul id="in-groups"></ul>
+<h1 id="header-date">Monday Night Doubles – </h1>
 
-    <div class="group-title">🕓 Pending Players</div>
-    <ul id="pending"></ul>
+<div class="form-section">
+  <label for="player-name">Select your name:</label>
+  <select id="player-name">
+    <option value="">-- Choose your name --</option>
+  </select><br><br>
 
-    <div class="group-title">🚫 Out This Week</div>
-    <ul id="out"></ul>
-  </div>
+  <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label><br>
+  <label><input type="radio" name="status" value="No"> No, not this week</label><br>
+  <button onclick="submitResponse()">Submit / Update</button>
+</div>
 
-  <div class="admin-link">
-    <a href="admin.html">🔐 Admin Access</a>
-  </div>
+<div class="form-section">
+  <div class="section-title">In:</div>
+  <div id="in-list"></div>
+  <div class="section-title">Pending:</div>
+  <div id="pending-list"></div>
+  <div class="section-title">Out:</div>
+  <div id="out-list"></div>
+</div>
 
-  <script>
-    const rsvpKey = "mondayDoublesRSVP";
+<script>
+  const db = firebase.database();
 
-    function autoClearOnWednesday() {
-      const lastCleared = localStorage.getItem("lastCleared");
-      const now = new Date();
-      const todayIsWednesday = now.getDay() === 3;
+  function getMondayDate() {
+    const today = new Date();
+    const nextMonday = new Date(today.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)));
+    return nextMonday.toISOString().split('T')[0];
+  }
 
-      if (todayIsWednesday && lastCleared !== now.toDateString()) {
-        localStorage.removeItem(rsvpKey);
-        localStorage.setItem("lastCleared", now.toDateString());
-      }
+  document.getElementById("header-date").innerText = "Monday Night Doubles – " + getMondayDate();
+
+  function submitResponse() {
+    const name = document.getElementById("player-name").value;
+    const statusInput = document.querySelector('input[name="status"]:checked');
+    if (!name || !statusInput) {
+      alert("Please select both name and status.");
+      return;
     }
+    const status = statusInput.value;
+    const timestamp = Date.now();
+    const weekKey = getMondayDate();
 
-    function getUpcomingMonday() {
-      const today = new Date();
-      const dayOfWeek = today.getDay();
-      const diffToMonday = (8 - dayOfWeek) % 7;
-      const monday = new Date(today);
-      monday.setDate(today.getDate() + diffToMonday);
-      return monday.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-    }
+    db.ref("responses/" + weekKey + "/" + name).set({
+      name: name,
+      status: status,
+      timestamp: timestamp
+    });
+  }
 
-    function loadResponses() {
-      const data = JSON.parse(localStorage.getItem(rsvpKey)) || [];
-      data.sort((a, b) => new Date(a.time) - new Date(b.time));
+  function loadResponses() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
 
-      const inPlayers = data.filter(p => p.status === "in");
-      const outPlayers = data.filter(p => p.status === "out");
+      const inList = [];
+      const pendingList = [];
+      const outList = [];
 
-      const groupList = document.getElementById("in-groups");
-      const pendingList = document.getElementById("pending");
-      const outList = document.getElementById("out");
-
-      groupList.innerHTML = "";
-      pendingList.innerHTML = "";
-      outList.innerHTML = "";
-
-      for (let i = 0; i < inPlayers.length; i++) {
-        const li = document.createElement("li");
-        li.textContent = `${i + 1}. ${inPlayers[i].name}`;
-        if (i < Math.floor(inPlayers.length / 4) * 4) {
-          groupList.appendChild(li);
+      const yesResponses = [];
+      for (const name in data) {
+        if (data[name].status === "Yes") {
+          yesResponses.push({ name: name, timestamp: data[name].timestamp });
         } else {
-          pendingList.appendChild(li);
+          outList.push(name);
         }
       }
 
-      outPlayers.forEach((p, i) => {
-        const li = document.createElement("li");
-        li.textContent = p.name;
-        outList.appendChild(li);
+      yesResponses.sort((a, b) => a.timestamp - b.timestamp);
+      yesResponses.forEach((entry, index) => {
+        if ((index + 1) % 4 === 0) {
+          inList.push(entry.name);
+        } else {
+          pendingList.push(entry.name);
+        }
       });
-    }
 
-    function submitResponse(status) {
-      const nameInput = document.getElementById("name");
-      const name = nameInput.value.trim();
-      if (!name || name.length < 3) {
-        alert("Please select a valid name.");
-        return;
+      document.getElementById("in-list").innerHTML = inList.map(n => `<div class="player">${n}</div>`).join("");
+      document.getElementById("pending-list").innerHTML = pendingList.map(n => `<div class="player">${n}</div>`).join("");
+      document.getElementById("out-list").innerHTML = outList.map(n => `<div class="player">${n}</div>`).join("");
+    });
+  }
+
+  function loadPlayers() {
+    db.ref("users").once("value").then(snapshot => {
+      const players = snapshot.val();
+      if (!players) return;
+      const dropdown = document.getElementById("player-name");
+      for (const key in players) {
+        const opt = document.createElement("option");
+        opt.value = players[key];
+        opt.text = players[key];
+        dropdown.appendChild(opt);
       }
+    });
+  }
 
-      const data = JSON.parse(localStorage.getItem(rsvpKey)) || [];
+  loadPlayers();
+  loadResponses();
+</script>
 
-      // Remove any existing entry for that name
-      const filtered = data.filter(p => p.name.toLowerCase() !== name.toLowerCase());
-      filtered.push({ name, status, time: new Date().toISOString() });
-      localStorage.setItem(rsvpKey, JSON.stringify(filtered));
-
-      nameInput.value = "";
-      loadResponses();
-    }
-
-    autoClearOnWednesday();
-    document.getElementById("currentMonday").textContent = getUpcomingMonday();
-    loadResponses();
-  </script>
 </body>
 </html>
