@@ -260,17 +260,24 @@
     });
   }
 
+  
   function loadPlayers() {
     db.ref("users").once("value").then(snapshot => {
       const players = snapshot.val();
-      if (!players) return;
       const dropdown = document.getElementById("player-name");
+
+      // Clear previous options except placeholder
+      dropdown.innerHTML = '<option value="">-- Choose your name --</option>';
+
+      if (!players) return;
       for (const key in players) {
         const opt = document.createElement("option");
         opt.value = players[key];
         opt.text = players[key];
         dropdown.appendChild(opt);
       }
+    });
+  }
     });
   }
 
