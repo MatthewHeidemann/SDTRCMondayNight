@@ -3,34 +3,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Monday Night Doubles – RSVP</title>
+  <title>Monday Night Doubles</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="./firebase.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
-    h1 { text-align: center; }
-    .form-section { margin-top: 30px; }
+    body { font-family: Arial, sans-serif; margin: auto; max-width: 900px; padding: 20px; }
+    nav a { margin: 0 10px; cursor: pointer; font-weight: bold; }
+    .view { display: none; margin-top: 30px; }
+    .active { display: block; }
     .section-title { font-weight: bold; margin-top: 20px; }
     .player { padding-left: 20px; }
   </style>
 </head>
 <body>
 
-<h1 id="header-date">Monday Night Doubles – </h1>
+<h1>🎾 Monday Night Doubles</h1>
 
-<div class="form-section">
-  <label for="player-name">Select your name:</label>
-  <select id="player-name">
-    <option value="">-- Choose your name --</option>
-  </select><br><br>
+<nav>
+  <a onclick="showView('rsvp')">RSVP</a>
+  <a onclick="showView('admin')">Admin</a>
+  <a onclick="showView('weeklyAdmin')">Weekly Admin</a>
+  <a onclick="showView('results')">Results</a>
+</nav>
 
-  <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label><br>
-  <label><input type="radio" name="status" value="No"> No, not this week</label><br>
-  <button onclick="submitResponse()">Submit / Update</button>
-</div>
-
-<div class="form-section">
+<!-- RSVP View -->
+<div id="rsvp" class="view active">
+  <h2>RSVP for Next Monday</h2>
+  <div>
+    <label for="player-name">Select your name:</label>
+    <select id="player-name">
+      <option value="">-- Choose your name --</option>
+    </select><br><br>
+    <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label><br>
+    <label><input type="radio" name="status" value="No"> No, not this week</label><br>
+    <button onclick="submitResponse()">Submit / Update</button>
+  </div>
   <div class="section-title">In:</div>
   <div id="in-list"></div>
   <div class="section-title">Pending:</div>
@@ -39,16 +47,37 @@
   <div id="out-list"></div>
 </div>
 
+<!-- Admin View -->
+<div id="admin" class="view">
+  <h2>Application Admin (coming soon)</h2>
+  <p>This section will allow you to add/remove users and reset weekly responses.</p>
+</div>
+
+<!-- Weekly Admin View -->
+<div id="weeklyAdmin" class="view">
+  <h2>Weekly Admin (coming soon)</h2>
+  <p>This section will allow you to lock RSVPs and assign players to courts.</p>
+</div>
+
+<!-- Results View -->
+<div id="results" class="view">
+  <h2>Final Results (coming soon)</h2>
+  <p>This section will show finalized player groupings and court assignments.</p>
+</div>
+
 <script>
   const db = firebase.database();
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
 
   function getMondayDate() {
     const today = new Date();
     const nextMonday = new Date(today.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)));
     return nextMonday.toISOString().split('T')[0];
   }
-
-  document.getElementById("header-date").innerText = "Monday Night Doubles – " + getMondayDate();
 
   function submitResponse() {
     const name = document.getElementById("player-name").value;
