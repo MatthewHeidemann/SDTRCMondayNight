@@ -208,15 +208,25 @@
       const mondayKey = getMondayKey();
       db.ref("/responses/" + mondayKey).once("value").then(snapshot => {
         const yesPlayers = [];
+
         snapshot.forEach(child => {
-          if (child.val() === "Yes") yesPlayers.push(child.key);
+          const name = child.key;
+          const val = child.val();
+          if (val && typeof val === 'object' && val.status === "Yes") {
+            yesPlayers.push({ name, timestamp: val.timestamp || 0 });
+          } else if (val === "Yes") {
+            yesPlayers.push({ name, timestamp: 0 });
+          }
         });
+
+        yesPlayers.sort((a, b) => a.timestamp - b.timestamp);
         const mainPlay = yesPlayers.slice(0, Math.floor(yesPlayers.length / 4) * 4);
-        
-        mainPlayList.innerHTML = mainPlay.map(name => 
-          `<li id="admin-player-${name.replace(/\s+/g, '-').toLowerCase()}" draggable="true" ondragstart="drag(event)">${name}</li>`
+
+        const listHTML = mainPlay.map(player =>
+          `<li id="admin-player-${player.name.replace(/\s+/g, '-').toLowerCase()}" draggable="true" ondragstart="drag(event)">${player.name}</li>`
         ).join("");
 
+        document.getElementById("mainPlayList").innerHTML = listHTML;
       });
     }
 
