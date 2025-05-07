@@ -148,7 +148,10 @@
         if (locked) {
           alert("RSVP is locked for this week.");
         } else {
-          db.ref("/responses/" + mondayKey + "/" + name).set(val).then(loadResponses);
+          db.ref("/responses/" + mondayKey + "/" + name).set({
+            status: val,
+            timestamp: Date.now()
+          }).then(loadResponses);
         }
       });
     }
@@ -157,14 +160,22 @@
       const mondayKey = getMondayKey();
       db.ref("/responses/" + mondayKey).on("value", snapshot => {
         const yes = [], no = [];
+
         snapshot.forEach(child => {
           const name = child.key;
-          const response = child.val();
-          if (response === "Yes") yes.push(name);
-          else no.push(name);
+          const value = child.val();
+          const response = typeof value === 'string' ? { status: value, timestamp: null } : value;
+          const timestamp = response.timestamp ? new Date(response.timestamp).toLocaleTimeString() : "";
+
+          const display = timestamp ? name + " (" + timestamp + ")" : name;
+
+          if (response.status === "Yes") yes.push(display);
+          else no.push(display);
         });
+
         const inPlayers = yes.slice(0, Math.floor(yes.length / 4) * 4);
         const pending = yes.slice(Math.floor(yes.length / 4) * 4);
+
         renderList("inList", inPlayers);
         renderList("pendingList", pending);
         renderList("outList", no);
