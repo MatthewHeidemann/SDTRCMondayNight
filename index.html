@@ -369,6 +369,11 @@
       });
     }
 
+
+    window.addEventListener('beforeunload', () => {
+      localStorage.removeItem("isAdmin");
+    });
+
 </script>
 </body>
 </html>
