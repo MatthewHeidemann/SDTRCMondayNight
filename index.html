@@ -97,9 +97,9 @@
       players.forEach(name => {
         const li = document.createElement("li");
         li.textContent = name;
-        li.id = "player-" + name.replace(/\s+/g, "-");
-        li.draggable = true;
-        li.ondragstart = drag;
+        li.id = "player-" + name.replace(/\s+/g, "-").toLowerCase();
+        li.setAttribute("draggable", true);
+        li.setAttribute("ondragstart", "drag(event)");
         ul.appendChild(li);
       });
     }
@@ -220,10 +220,9 @@
       ev.preventDefault();
       const data = ev.dataTransfer.getData("text");
       const dragged = document.getElementById(data);
-      if (dragged && ev.target.tagName === "UL") {
-        ev.target.appendChild(dragged);
-      } else if (dragged && ev.target.tagName === "LI") {
-        ev.target.parentNode.insertBefore(dragged, ev.target.nextSibling);
+      const dropTarget = ev.target.closest("ul");
+      if (dragged && dropTarget) {
+        dropTarget.appendChild(dragged);
       }
     }
 
