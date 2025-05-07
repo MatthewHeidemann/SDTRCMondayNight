@@ -77,7 +77,8 @@
       </div>
 
       <button onclick="saveLineup()">💾 Save Lineup</button>
-      <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
+      <button onclick="resetWeek()">🔁 Reset Week</button>
+  <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
     </section>
   </main>
 
@@ -289,6 +290,24 @@
       }
     }
 
-  </script>
+  
+    function resetWeek() {
+      const mondayKey = getMondayKey();
+      if (!confirm("Are you sure you want to reset this week? This will delete all RSVPs, groupings, and unlock the week.")) return;
+
+      const updates = {};
+      updates["/responses/" + mondayKey] = null;
+      updates["/lineups/" + mondayKey] = null;
+      updates["/state/" + mondayKey] = null;
+
+      db.ref().update(updates).then(() => {
+        alert("Week has been reset.");
+        loadResponses();
+        loadAdminPlayers();
+        setLockButtonText();
+      });
+    }
+
+</script>
 </body>
 </html>
