@@ -284,7 +284,7 @@
 
     function handleAdminLogin() {
       const pwd = document.getElementById("adminPassword").value;
-      if (pwd === "tennis123") {
+      if (pwd === "1") {
         localStorage.setItem("isAdmin", "true");
         showAdminView();
       } else {
@@ -301,48 +301,27 @@
 
     function loadAdminPlayers() {
       const mondayKey = getMondayKey();
-      db.ref("/lineups/" + mondayKey).once("value").then(snapshot => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          populateGroup("mainPlayList", data.mainPlay.players);
-          document.getElementById("mainPlayLabel").value = data.mainPlay.label || "";
+      db.ref("/responses/" + mondayKey).once("value").then(snapshot => {
+        const yesPlayers = [];
 
-          populateGroup("walkOn1", data.walkOn1.players);
-          document.getElementById("walkOnLabel1").value = data.walkOn1.label || "";
+        snapshot.forEach(child => {
+          const name = child.key;
+          const val = child.val();
+          if (val && typeof val === 'object' && val.status === "Yes") {
+            yesPlayers.push({ name, timestamp: val.timestamp || 0 });
+          } else if (val === "Yes") {
+            yesPlayers.push({ name, timestamp: 0 });
+          }
+        });
 
-          populateGroup("walkOn2", data.walkOn2.players);
-          document.getElementById("walkOnLabel2").value = data.walkOn2.label || "";
+        yesPlayers.sort((a, b) => a.timestamp - b.timestamp);
+        const mainPlay = yesPlayers.slice(0, Math.floor(yesPlayers.length / 4) * 4);
 
-          populateGroup("walkOn3", data.walkOn3.players);
-          document.getElementById("walkOnLabel3").value = data.walkOn3.label || "";
-        } else {
-          // fallback: load Yes responders
-          db.ref("/responses/" + mondayKey).once("value").then(snapshot => {
-            const yesPlayers = [];
-            snapshot.forEach(child => {
-              const val = child.val();
-              if ((typeof val === 'object' && val.status === "Yes") || val === "Yes") {
-                yesPlayers.push({ name: child.key, timestamp: val.timestamp || 0 });
-              }
-            });
-            yesPlayers.sort((a, b) => a.timestamp - b.timestamp);
-            const main = yesPlayers.slice(0, Math.floor(yesPlayers.length / 4) * 4);
-            populateGroup("mainPlayList", main.map(p => p.name));
-          });
-        }
-      });
-    }
+        const listHTML = mainPlay.map(player =>
+          `<li id="admin-player-${player.name.replace(/\s+/g, '-').toLowerCase()}" draggable="true" ondragstart="drag(event)">${player.name}</li>`
+        ).join("");
 
-    function populateGroup(containerId, players) {
-      const list = document.getElementById(containerId);
-      list.innerHTML = "";
-      players.forEach(name => {
-        const li = document.createElement("li");
-        li.id = "admin-player-" + name.replace(/\s+/g, '-').toLowerCase();
-        li.textContent = name;
-        li.draggable = true;
-        li.ondragstart = drag;
-        list.appendChild(li);
+        document.getElementById("mainPlayList").innerHTML = listHTML;
       });
     }
 
@@ -389,7 +368,10 @@
     document.addEventListener("DOMContentLoaded", () => {
       loadPlayers();
       loadResponses();
-      if (localStorage.getItem("isAdmin") === "true") showAdminView();
+      if (localStorage.getItem("isAdmin") === "true") {
+    document.getElementById("admin-login").style.display = "none";
+    showAdminView();
+  }
     });
   
     function lockWeek() {
@@ -572,9 +554,7 @@
     }
 
 
-    window.addEventListener('beforeunload', () => {
-      localStorage.removeItem("isAdmin");
-    });
+    
 
 
     function getUpcomingMondayLabel() {
