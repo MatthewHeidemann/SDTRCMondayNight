@@ -70,6 +70,9 @@
   
     function loadInPlayersToAdmin() {
       const weekKey = getMondayDateKey();
+      const mainDiv = document.getElementById("main");
+      mainDiv.innerHTML = ""; // Clear current entries
+
       db.ref("responses/" + weekKey).once("value").then(snapshot => {
         const data = snapshot.val();
         if (!data) return;
@@ -80,12 +83,11 @@
             yesResponses.push({ name: name, timestamp: data[name].timestamp });
           }
         }
+
         yesResponses.sort((a, b) => a.timestamp - b.timestamp);
         const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
         const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
 
-        const mainDiv = document.getElementById("main");
-        mainDiv.innerHTML = "";
         inPlayers.forEach(name => {
           const div = document.createElement("div");
           div.className = "player";
@@ -95,12 +97,20 @@
           div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
           mainDiv.appendChild(div);
         });
+
+        setupDragAndDrop(); // Ensure drag-and-drop runs after players are inserted
       });
     }
 
-    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
-      showView("weeklyAdmin");
-      loadInPlayersToAdmin();
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+        showView("weeklyAdmin");
+        loadInPlayersToAdmin();
+      });
+
+      if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+      }
     });
 
 </script>
@@ -168,6 +178,9 @@
   
     function loadInPlayersToAdmin() {
       const weekKey = getMondayDateKey();
+      const mainDiv = document.getElementById("main");
+      mainDiv.innerHTML = ""; // Clear current entries
+
       db.ref("responses/" + weekKey).once("value").then(snapshot => {
         const data = snapshot.val();
         if (!data) return;
@@ -178,12 +191,11 @@
             yesResponses.push({ name: name, timestamp: data[name].timestamp });
           }
         }
+
         yesResponses.sort((a, b) => a.timestamp - b.timestamp);
         const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
         const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
 
-        const mainDiv = document.getElementById("main");
-        mainDiv.innerHTML = "";
         inPlayers.forEach(name => {
           const div = document.createElement("div");
           div.className = "player";
@@ -193,12 +205,20 @@
           div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
           mainDiv.appendChild(div);
         });
+
+        setupDragAndDrop(); // Ensure drag-and-drop runs after players are inserted
       });
     }
 
-    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
-      showView("weeklyAdmin");
-      loadInPlayersToAdmin();
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+        showView("weeklyAdmin");
+        loadInPlayersToAdmin();
+      });
+
+      if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+      }
     });
 
 </script>
@@ -266,6 +286,9 @@
   
     function loadInPlayersToAdmin() {
       const weekKey = getMondayDateKey();
+      const mainDiv = document.getElementById("main");
+      mainDiv.innerHTML = ""; // Clear current entries
+
       db.ref("responses/" + weekKey).once("value").then(snapshot => {
         const data = snapshot.val();
         if (!data) return;
@@ -276,12 +299,11 @@
             yesResponses.push({ name: name, timestamp: data[name].timestamp });
           }
         }
+
         yesResponses.sort((a, b) => a.timestamp - b.timestamp);
         const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
         const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
 
-        const mainDiv = document.getElementById("main");
-        mainDiv.innerHTML = "";
         inPlayers.forEach(name => {
           const div = document.createElement("div");
           div.className = "player";
@@ -291,12 +313,20 @@
           div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
           mainDiv.appendChild(div);
         });
+
+        setupDragAndDrop(); // Ensure drag-and-drop runs after players are inserted
       });
     }
 
-    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
-      showView("weeklyAdmin");
-      loadInPlayersToAdmin();
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+        showView("weeklyAdmin");
+        loadInPlayersToAdmin();
+      });
+
+      if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+      }
     });
 
 </script>
@@ -578,6 +608,9 @@
   
     function loadInPlayersToAdmin() {
       const weekKey = getMondayDateKey();
+      const mainDiv = document.getElementById("main");
+      mainDiv.innerHTML = ""; // Clear current entries
+
       db.ref("responses/" + weekKey).once("value").then(snapshot => {
         const data = snapshot.val();
         if (!data) return;
@@ -588,12 +621,11 @@
             yesResponses.push({ name: name, timestamp: data[name].timestamp });
           }
         }
+
         yesResponses.sort((a, b) => a.timestamp - b.timestamp);
         const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
         const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
 
-        const mainDiv = document.getElementById("main");
-        mainDiv.innerHTML = "";
         inPlayers.forEach(name => {
           const div = document.createElement("div");
           div.className = "player";
@@ -603,12 +635,20 @@
           div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
           mainDiv.appendChild(div);
         });
+
+        setupDragAndDrop(); // Ensure drag-and-drop runs after players are inserted
       });
     }
 
-    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
-      showView("weeklyAdmin");
-      loadInPlayersToAdmin();
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+        showView("weeklyAdmin");
+        loadInPlayersToAdmin();
+      });
+
+      if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+      }
     });
 
 </script>
