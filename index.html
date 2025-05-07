@@ -244,7 +244,28 @@
 
     function lockWeek() {
       const mondayKey = getMondayKey();
-      db.ref("/state/" + mondayKey + "/locked").set(true).then(() => alert("Week locked."));
+      const lockRef = db.ref("/state/" + mondayKey + "/locked");
+      lockRef.once("value").then(snapshot => {
+        const current = snapshot.val();
+        const newState = !current;
+        lockRef.set(newState).then(() => {
+          const btn = document.getElementById("lockBtn");
+          btn.textContent = newState ? "🔓 Unlock Week" : "🔒 Lock Week";
+
+          const rsvpSection = document.getElementById("rsvp");
+          const resultsSection = document.getElementById("results");
+
+          if (newState) {
+            if (rsvpSection) rsvpSection.style.display = "none";
+            if (resultsSection) resultsSection.style.display = "none";
+            alert("Week locked.");
+          } else {
+            if (rsvpSection) rsvpSection.style.display = "block";
+            if (resultsSection) resultsSection.style.display = "block";
+            alert("Week unlocked.");
+          }
+        });
+      });
     }
 
     document.getElementById("submitBtn").addEventListener("click", submitRSVP);
@@ -262,8 +283,21 @@
         const current = snapshot.val();
         const newState = !current;
         lockRef.set(newState).then(() => {
-          document.getElementById("lockBtn").textContent = newState ? "🔓 Unlock Week" : "🔒 Lock Week";
-          alert(newState ? "Week locked." : "Week unlocked.");
+          const btn = document.getElementById("lockBtn");
+          btn.textContent = newState ? "🔓 Unlock Week" : "🔒 Lock Week";
+
+          const rsvpSection = document.getElementById("rsvp");
+          const resultsSection = document.getElementById("results");
+
+          if (newState) {
+            if (rsvpSection) rsvpSection.style.display = "none";
+            if (resultsSection) resultsSection.style.display = "none";
+            alert("Week locked.");
+          } else {
+            if (rsvpSection) rsvpSection.style.display = "block";
+            if (resultsSection) resultsSection.style.display = "block";
+            alert("Week unlocked.");
+          }
         });
       });
     }
@@ -305,8 +339,21 @@
         const current = snapshot.val();
         const newState = !current;
         lockRef.set(newState).then(() => {
-          document.getElementById("lockBtn").textContent = newState ? "🔓 Unlock Week" : "🔒 Lock Week";
-          alert(newState ? "Week locked." : "Week unlocked.");
+          const btn = document.getElementById("lockBtn");
+          btn.textContent = newState ? "🔓 Unlock Week" : "🔒 Lock Week";
+
+          const rsvpSection = document.getElementById("rsvp");
+          const resultsSection = document.getElementById("results");
+
+          if (newState) {
+            if (rsvpSection) rsvpSection.style.display = "none";
+            if (resultsSection) resultsSection.style.display = "none";
+            alert("Week locked.");
+          } else {
+            if (rsvpSection) rsvpSection.style.display = "block";
+            if (resultsSection) resultsSection.style.display = "block";
+            alert("Week unlocked.");
+          }
         });
       });
     }
@@ -430,6 +477,22 @@
         label.innerHTML = "<strong>Update your status for Monday " + getUpcomingMondayLabel() + "</strong>";
       }
     });
+
+    function applyLockedStateVisibility(locked) {
+      const rsvpSection = document.getElementById("rsvp");
+      const resultsSection = document.getElementById("results");
+      if (rsvpSection) rsvpSection.style.display = locked ? "none" : "block";
+      if (resultsSection) resultsSection.style.display = locked ? "none" : "block";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const mondayKey = getMondayKey();
+      db.ref("/state/" + mondayKey + "/locked").once("value").then(snapshot => {
+        const locked = snapshot.val();
+        applyLockedStateVisibility(locked);
+      });
+    });
+
 </script>
 </body>
 </html>
