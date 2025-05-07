@@ -15,21 +15,7 @@
     li { background: #eee; padding: 5px; margin: 3px 0; border-radius: 4px; }
     h2 { margin-top: 2rem; font-size: 1.2rem; }
     .admin-group { min-height: 50px; border: 1px dashed #aaa; padding: 5px; }
-  
-    .result-card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .result-card h3 {
-      margin-top: 0;
-    }
-
-</style>
+  </style>
 
   <style>
     body {
@@ -122,37 +108,14 @@
     .hidden {
       display: none;
     }
-  
-    .result-card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .result-card h3 {
-      margin-top: 0;
-    }
-
-</style>
+  </style>
 
 </head>
 <body>
   <header>Monday Night Doubles 🎾</header>
   <main>
     <!-- RSVP Form -->
-    
-  <section id="results" style="display:none;">
-    <h2>Lineup for This Week</h2>
-    <div id="resultsMainPlay" class="result-card"></div>
-    <div id="resultsWalkOn1" class="result-card"></div>
-    <div id="resultsWalkOn2" class="result-card"></div>
-    <div id="resultsWalkOn3" class="result-card"></div>
-  </section>
-
-  <section id="rsvp">
+    <section id="rsvp">
       <label id="playerPrompt" for="playerSelect">Select Your Name:</label>
       <select id="playerSelect"><option value="">Loading players...</option></select>
 
@@ -338,80 +301,61 @@
 
     function loadAdminPlayers() {
       const mondayKey = getMondayKey();
-      db.ref("/responses/" + mondayKey).once("value").then(snapshot => {
-        const yesPlayers = [];
+      db.ref("/lineups/" + mondayKey).once("value").then(snapshot => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          populateGroup("mainPlayList", data.mainPlay.players);
+          document.getElementById("mainPlayLabel").value = data.mainPlay.label || "";
 
-        snapshot.forEach(child => {
-          const name = child.key;
-          const val = child.val();
-          if (val && typeof val === 'object' && val.status === "Yes") {
-            yesPlayers.push({ name, timestamp: val.timestamp || 0 });
-          } else if (val === "Yes") {
-            yesPlayers.push({ name, timestamp: 0 });
-          }
-        });
+          populateGroup("walkOn1", data.walkOn1.players);
+          document.getElementById("walkOnLabel1").value = data.walkOn1.label || "";
 
-        yesPlayers.sort((a, b) => a.timestamp - b.timestamp);
-        const mainPlay = yesPlayers.slice(0, Math.floor(yesPlayers.length / 4) * 4);
+          populateGroup("walkOn2", data.walkOn2.players);
+          document.getElementById("walkOnLabel2").value = data.walkOn2.label || "";
 
-        const listHTML = mainPlay.map(player =>
-          `<li id="admin-player-${player.name.replace(/\s+/g, '-').toLowerCase()}" draggable="true" ondragstart="drag(event)">${player.name}</li>`
-        ).join("");
+          populateGroup("walkOn3", data.walkOn3.players);
+          document.getElementById("walkOnLabel3").value = data.walkOn3.label || "";
+        } else {
+          // fallback: load Yes responders
+          db.ref("/responses/" + mondayKey).once("value").then(snapshot => {
+            const yesPlayers = [];
+            snapshot.forEach(child => {
+              const val = child.val();
+              if ((typeof val === 'object' && val.status === "Yes") || val === "Yes") {
+                yesPlayers.push({ name: child.key, timestamp: val.timestamp || 0 });
+              }
+            });
+            yesPlayers.sort((a, b) => a.timestamp - b.timestamp);
+            const main = yesPlayers.slice(0, Math.floor(yesPlayers.length / 4) * 4);
+            populateGroup("mainPlayList", main.map(p => p.name));
+          });
+        }
+      });
+    }
 
-        document.getElementById("mainPlayList").innerHTML = listHTML;
+    function populateGroup(containerId, players) {
+      const list = document.getElementById(containerId);
+      list.innerHTML = "";
+      players.forEach(name => {
+        const li = document.createElement("li");
+        li.id = "admin-player-" + name.replace(/\s+/g, '-').toLowerCase();
+        li.textContent = name;
+        li.draggable = true;
+        li.ondragstart = drag;
+        list.appendChild(li);
       });
     }
 
     function saveLineup() {
       const mondayKey = getMondayKey();
-      const main = Array.from(document.getElementById("mainPlayList").children).map(li => li.textContent);
-      const walk1 = Array.from(document.getElementById("walkOn1").children).map(li => li.textContent);
-      const walk2 = Array.from(document.getElementById("walkOn2").children).map(li => li.textContent);
-      const walk3 = Array.from(document.getElementById("walkOn3").children).map(li => li.textContent);
-
-      const lineup = {
-        mainPlay: {
-          label: document.getElementById("mainPlayLabel").value,
-          players: main
-        },
-        walkOn1: {
-          label: document.getElementById("walkOnLabel1").value,
-          players: walk1
-        },
-        walkOn2: {
-          label: document.getElementById("walkOnLabel2").value,
-          players: walk2
-        },
-        walkOn3: {
-          label: document.getElementById("walkOnLabel3").value,
-          players: walk3
-        }
+      const extractList = id => Array.from(document.querySelectorAll(`#${id} li`)).map(li => li.textContent.trim()).filter(Boolean);
+      const data = {
+        main: extractList("mainPlayList"),
+        walkOn1: extractList("walkOn1"),
+        walkOn2: extractList("walkOn2"),
+        walkOn3: extractList("walkOn3")
       };
-
-      db.ref("/lineups/" + mondayKey).set(lineup).then(() => {
-        document.getElementById("results").style.display = "block";
-        renderLineupResults(lineup);
-      });
-    }
-
-    function renderLineupResults(lineup) {
-      const renderCard = (containerId, label, players) => {
-        const container = document.getElementById(containerId);
-        if (players.length === 0) {
-          container.style.display = "none";
-          return;
-        }
-        container.style.display = "block";
-        container.innerHTML = `
-          <h3>${label}</h3>
-          <ul>${players.map(p => `<li>${p}</li>`).join('')}</ul>
-        `;
-      };
-
-      renderCard("resultsMainPlay", "Main Group Play " + (lineup.mainPlay.label || ""), lineup.mainPlay.players);
-      renderCard("resultsWalkOn1", "Walk-On Court 1 " + (lineup.walkOn1.label || ""), lineup.walkOn1.players);
-      renderCard("resultsWalkOn2", "Walk-On Court 2 " + (lineup.walkOn2.label || ""), lineup.walkOn2.players);
-      renderCard("resultsWalkOn3", "Walk-On Court 3 " + (lineup.walkOn3.label || ""), lineup.walkOn3.players);
+      db.ref("/lineups/" + mondayKey).set(data).then(() => alert("Lineup saved."));
     }
 
     function lockWeek() {
