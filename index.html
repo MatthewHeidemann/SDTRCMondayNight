@@ -79,6 +79,16 @@
       <button onclick="saveLineup()">💾 Save Lineup</button>
       <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
     </section>
+
+<!-- Application-Level Admin: User Management -->
+<section id="app-admin" style="display:none;">
+  <h2>Manage Player List</h2>
+  <input type="text" id="newPlayerName" placeholder="Enter new player name" />
+  <button onclick="addPlayer()">➕ Add Player</button>
+
+  <ul id="userList"></ul>
+</section>
+
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -161,6 +171,8 @@
       if (pwd === "tennis123") {
         localStorage.setItem("isAdmin", "true");
         showAdminView();
+    document.getElementById('app-admin').style.display = 'block';
+    loadUserList();
       } else {
         alert("Incorrect password");
       }
@@ -212,6 +224,8 @@
       loadPlayers();
       loadResponses();
       if (localStorage.getItem("isAdmin") === "true") showAdminView();
+    document.getElementById('app-admin').style.display = 'block';
+    loadUserList();
     });
   
     function lockWeek() {
@@ -289,6 +303,39 @@
       }
     }
 
-  </script>
+  
+    function loadUserList() {
+      const ul = document.getElementById("userList");
+      ul.innerHTML = "";
+      db.ref("/users").once("value").then(snapshot => {
+        snapshot.forEach(child => {
+          const name = child.val();
+          const li = document.createElement("li");
+          li.textContent = name + " ";
+          const del = document.createElement("button");
+          del.textContent = "❌";
+          del.onclick = () => removePlayer(child.key);
+          li.appendChild(del);
+          ul.appendChild(li);
+        });
+      });
+    }
+
+    function addPlayer() {
+      const name = document.getElementById("newPlayerName").value.trim();
+      if (!name) return alert("Enter a name.");
+      db.ref("/users").push(name).then(() => {
+        document.getElementById("newPlayerName").value = "";
+        loadUserList();
+      });
+    }
+
+    function removePlayer(key) {
+      if (confirm("Are you sure you want to remove this player?")) {
+        db.ref("/users/" + key).remove().then(loadUserList);
+      }
+    }
+
+</script>
 </body>
 </html>
