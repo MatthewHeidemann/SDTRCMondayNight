@@ -234,9 +234,13 @@ function setupDragAndDrop() {
     const db = firebase.database();
 
     function showView(id) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.add('active');
+    if (id === 'weeklyAdmin') setupDragAndDrop();
+  }
+}
 
     function getMondayDate() {
       const today = new Date();
