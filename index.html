@@ -419,16 +419,17 @@
       const day = today.getDay();
       const nextMonday = new Date(today);
       nextMonday.setDate(today.getDate() + ((8 - day) % 7 || 7));
-      return nextMonday.toDateString();
+
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+      return nextMonday.toLocaleDateString(undefined, options);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       const label = document.getElementById("playerPrompt");
       if (label) {
-        label.textContent = "Update your status for Monday, " + getUpcomingMondayLabel();
+        label.innerHTML = "<strong>Update your status for Monday " + getUpcomingMondayLabel() + "</strong>";
       }
     });
-
 </script>
 </body>
 </html>
