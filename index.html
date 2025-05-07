@@ -15,13 +15,144 @@
     li { background: #eee; padding: 5px; margin: 3px 0; border-radius: 4px; }
     h2 { margin-top: 2rem; font-size: 1.2rem; }
     .admin-group { min-height: 50px; border: 1px dashed #aaa; padding: 5px; }
-  </style>
+  
+    .result-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .result-card h3 {
+      margin-top: 0;
+    }
+
+</style>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+      background: #19856D;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    main {
+      padding: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    section {
+      margin-bottom: 2rem;
+      background: #FFFEFA;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    label, select, input[type="radio"] {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.25rem 0.25rem 1rem 0;
+      border: none;
+      border-radius: 4px;
+      background: #196785;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      padding: 0.5rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      background: #FFFEFA;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      z-index: 100;
+    }
+
+    .admin-group {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-height: 50px;
+      padding: 0.5rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+  
+    .result-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .result-card h3 {
+      margin-top: 0;
+    }
+
+</style>
+
 </head>
 <body>
   <header>Monday Night Doubles 🎾</header>
   <main>
     <!-- RSVP Form -->
-    <section id="rsvp">
+    
+  <section id="results" style="display:none;">
+    <h2>Lineup for This Week</h2>
+    <div id="resultsMainPlay" class="result-card"></div>
+    <div id="resultsWalkOn1" class="result-card"></div>
+    <div id="resultsWalkOn2" class="result-card"></div>
+    <div id="resultsWalkOn3" class="result-card"></div>
+  </section>
+
+  <section id="rsvp">
       <label id="playerPrompt" for="playerSelect">Select Your Name:</label>
       <select id="playerSelect"><option value="">Loading players...</option></select>
 
@@ -46,7 +177,7 @@
     </section>
 
     <!-- Admin Login -->
-    <section id="admin-login">
+    <section id="admin-login" class="hidden">
       <h2>Admin Login</h2>
       <input type="password" id="adminPassword" placeholder="Enter admin password" />
       <button onclick="handleAdminLogin()">Login</button>
@@ -94,7 +225,8 @@
   <button onclick="goBackToAdmin()" style="margin-top: 1rem;">⬅️ Back to Admin</button>
 </section>
 
-  </main>
+  <div style="text-align:center;"><button onclick="document.getElementById('admin-login').classList.toggle('hidden')">🔑 Admin Login</button></div>
+</main>
 
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
@@ -256,21 +388,30 @@
         }
       };
 
-      const saveBtn = document.querySelector("button[onclick='saveLineup()']");
-      const resultsSection = document.getElementById("results");
+      db.ref("/lineups/" + mondayKey).set(lineup).then(() => {
+        document.getElementById("results").style.display = "block";
+        renderLineupResults(lineup);
+      });
+    }
 
-      if (resultsSection.style.display === "block") {
-        db.ref("/lineups/" + mondayKey).remove().then(() => {
-          resultsSection.style.display = "none";
-          saveBtn.textContent = "💾 Save Lineup";
-        });
-      } else {
-        db.ref("/lineups/" + mondayKey).set(lineup).then(() => {
-          resultsSection.style.display = "block";
-          saveBtn.textContent = "🔓 Unlock Lineup";
-          loadFinalLineup();
-        });
-      }
+    function renderLineupResults(lineup) {
+      const renderCard = (containerId, label, players) => {
+        const container = document.getElementById(containerId);
+        if (players.length === 0) {
+          container.style.display = "none";
+          return;
+        }
+        container.style.display = "block";
+        container.innerHTML = `
+          <h3>${label}</h3>
+          <ul>${players.map(p => `<li>${p}</li>`).join('')}</ul>
+        `;
+      };
+
+      renderCard("resultsMainPlay", "Main Group Play " + (lineup.mainPlay.label || ""), lineup.mainPlay.players);
+      renderCard("resultsWalkOn1", "Walk-On Court 1 " + (lineup.walkOn1.label || ""), lineup.walkOn1.players);
+      renderCard("resultsWalkOn2", "Walk-On Court 2 " + (lineup.walkOn2.label || ""), lineup.walkOn2.players);
+      renderCard("resultsWalkOn3", "Walk-On Court 3 " + (lineup.walkOn3.label || ""), lineup.walkOn3.players);
     }
 
     function lockWeek() {
@@ -302,7 +443,6 @@
     document.getElementById("submitBtn").addEventListener("click", submitRSVP);
 
     document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("results").style.display = "none";
       loadPlayers();
       loadResponses();
       if (localStorage.getItem("isAdmin") === "true") showAdminView();
@@ -504,7 +644,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("results").style.display = "none";
       const label = document.getElementById("playerPrompt");
       if (label) {
         label.innerHTML = "<strong>Update your status for Monday " + getUpcomingMondayLabel() + "</strong>";
@@ -519,7 +658,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("results").style.display = "none";
       const mondayKey = getMondayKey();
       db.ref("/state/" + mondayKey + "/locked").once("value").then(snapshot => {
         const locked = snapshot.val();
