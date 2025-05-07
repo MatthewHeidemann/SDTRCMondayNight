@@ -1,55 +1,120 @@
-<!-- Version: full-app-v3 -->
+<!-- Version: full-app-v4-mobile -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Monday Night Doubles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="./firebase.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: auto; max-width: 900px; padding: 20px; }
-    nav a { margin: 0 10px; cursor: pointer; font-weight: bold; }
-    .view { display: none; margin-top: 30px; }
-    .active { display: block; }
-    .section-title { font-weight: bold; margin-top: 20px; }
-    .player { padding-left: 20px; }
-    .admin-nav { margin-top: 10px; display: none; }
-    #login-section { float: right; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0 10px;
+      max-width: 600px;
+      margin: auto;
+    }
+    header {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+    }
+    nav button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
+      font-size: 16px;
+    }
+    .view {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    .section-title {
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .player {
+      padding-left: 20px;
+      font-size: 16px;
+    }
+    input, select, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .admin-nav {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
-<h1>🎾 Monday Night Doubles</h1>
+<header>🎾 Monday Night Doubles</header>
 
 <nav>
-  <a id="main-tab" onclick="showView(currentMainTab)">Loading...</a>
-  <a onclick="showAdminNav()">Admin ▾</a>
-  <span id="login-section">
-    <input type="password" id="admin-password" placeholder="Admin Password">
-    <button onclick="login()">Login</button>
-  </span>
+  <button onclick="showView('rsvp')">RSVP</button>
+  <button onclick="showView('results')">Results</button>
+  <button onclick="showView('adminLogin')">Admin Login</button>
 </nav>
 
-<div class="admin-nav" id="admin-subnav">
-  <a onclick="showView('weeklyAdmin')">Weekly Admin</a>
-  <a onclick="showView('admin')">Application Admin</a>
-</div>
-
-<!-- RSVP -->
+<!-- RSVP View -->
 <div id="rsvp" class="view active">
-  <h2>RSVP</h2>
+  <h2>RSVP for Next Monday</h2>
   <label for="player-name">Select your name:</label>
-  <select id="player-name"><option value="">-- Choose your name --</option></select><br><br>
-  <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label><br>
-  <label><input type="radio" name="status" value="No"> No, not this week</label><br>
+  <select id="player-name"><option value="">-- Choose your name --</option></select>
+  <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label>
+  <label><input type="radio" name="status" value="No"> No, not this week</label>
   <button onclick="submitResponse()">Submit</button>
   <div class="section-title">In:</div><div id="in-list"></div>
   <div class="section-title">Pending:</div><div id="pending-list"></div>
   <div class="section-title">Out:</div><div id="out-list"></div>
 </div>
 
-<!-- Admin -->
+<!-- Admin Login View -->
+<div id="adminLogin" class="view">
+  <h2>Admin Login</h2>
+  <input type="password" id="admin-password" placeholder="Enter Admin Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- Admin Views (Only visible when logged in) -->
+<div id="adminPanel" class="view">
+  <h2>Admin Panel</h2>
+  <button onclick="showView('weeklyAdmin')">Weekly Admin</button>
+  <button onclick="showView('admin')">Application Admin</button>
+</div>
+
+<!-- Weekly Admin View -->
+<div id="weeklyAdmin" class="view">
+  <h2>Weekly Admin</h2>
+  <button onclick="lockWeek()">Lock Submissions</button>
+  <div id="lock-confirm" style="color: green;"></div>
+  <input type="text" id="main-label" placeholder="Main Play (e.g. Courts 1–4)">
+  <div id="main-play"></div>
+  <input type="text" id="walkon1-label" placeholder="Walk-On Court 1 Label">
+  <div id="walkon1"></div>
+  <input type="text" id="walkon2-label" placeholder="Walk-On Court 2 Label">
+  <div id="walkon2"></div>
+  <input type="text" id="walkon3-label" placeholder="Walk-On Court 3 Label">
+  <div id="walkon3"></div>
+  <button onclick="saveResults()">Save Lineup</button>
+  <div id="save-status" style="color: green;"></div>
+</div>
+
+<!-- Application Admin -->
 <div id="admin" class="view">
   <h2>Application Admin</h2>
   <input type="text" id="new-player-name" placeholder="Enter player name">
@@ -58,12 +123,7 @@
   <button onclick="resetResponses()">Reset This Week</button><div id="reset-status"></div>
 </div>
 
-<!-- Weekly Admin -->
-<div id="weeklyAdmin" class="view">
-  <h2>Weekly Admin (coming soon)</h2>
-</div>
-
-<!-- Results -->
+<!-- Results View -->
 <div id="results" class="view">
   <h2>Final Results (coming soon)</h2>
 </div>
@@ -71,15 +131,12 @@
 <script>
   const db = firebase.database();
   let currentMainTab = "rsvp";
+  let mainGroup = [];
+  let walkOns = [[], [], []];
 
   function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-  }
-
-  function showAdminNav() {
-    document.getElementById("admin-subnav").style.display = "block";
-    showView("weeklyAdmin");
   }
 
   function getMondayDate() {
@@ -106,18 +163,13 @@
     });
   }
 
-  
   function loadResponses() {
     const weekKey = getMondayDate();
     db.ref("responses/" + weekKey).on("value", (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
 
-      const inList = [];
-      const pendingList = [];
-      const outList = [];
-
-      const yesResponses = [];
+      const inList = [], pendingList = [], outList = [], yesResponses = [];
       for (const name in data) {
         if (data[name].status === "Yes") {
           yesResponses.push({ name: name, timestamp: data[name].timestamp });
@@ -125,7 +177,6 @@
           outList.push(name);
         }
       }
-
       yesResponses.sort((a, b) => a.timestamp - b.timestamp);
       const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
       const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
@@ -136,7 +187,6 @@
       document.getElementById("out-list").innerHTML = outList.map(n => `<div class="player">${n}</div>`).join("");
     });
   }
-
 
   function loadPlayers() {
     db.ref("users").once("value").then(snapshot => {
@@ -193,13 +243,10 @@
     });
   }
 
-  function checkLockState() {
+  function lockWeek() {
     const weekKey = getMondayDate();
-    db.ref("state/" + weekKey + "/locked").once("value").then(snapshot => {
-      const locked = snapshot.val() === true;
-      currentMainTab = locked ? "results" : "rsvp";
-      document.getElementById("main-tab").innerText = locked ? "Results" : "RSVP";
-      showView(currentMainTab);
+    db.ref("state/" + weekKey).update({ locked: true }).then(() => {
+      document.getElementById("lock-confirm").innerText = "Submissions locked.";
     });
   }
 
@@ -208,29 +255,70 @@
     if (input === "tennis123") {
       localStorage.setItem("admin-auth", "true");
       unlockAdminUI();
+      showView("adminPanel");
     } else {
       alert("Incorrect password.");
     }
   }
 
   function unlockAdminUI() {
-    document.getElementById("admin-subnav").style.display = "block";
-    document.getElementById("login-section").style.display = "none";
+    loadWeeklyAdminPlayers();
   }
 
-  function checkAuth() {
-    if (localStorage.getItem("admin-auth") === "true") {
-      unlockAdminUI();
-    } else {
-      document.getElementById("admin-subnav").style.display = "none";
-    }
+  function loadWeeklyAdminPlayers() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).once("value").then(snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+      mainGroup = Object.entries(data)
+        .filter(([_, val]) => val.status === "Yes")
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)
+        .map(([name]) => name);
+      walkOns = [[], [], []];
+      renderGroups();
+    });
+  }
+
+  function renderGroups() {
+    document.getElementById("main-play").innerHTML = mainGroup.map((name, i) =>
+      `<div>${name} <button onclick="moveToWalkOn(${i}, 0)">→ WO1</button>
+       <button onclick="moveToWalkOn(${i}, 1)">→ WO2</button>
+       <button onclick="moveToWalkOn(${i}, 2)">→ WO3</button></div>`).join("");
+
+    walkOns.forEach((group, index) => {
+      document.getElementById("walkon" + (index + 1)).innerHTML = group.map((name, i) =>
+        `<div>${name} <button onclick="moveToMain(${index}, ${i})">← Back</button></div>`).join("");
+    });
+  }
+
+  function moveToWalkOn(index, groupIndex) {
+    const player = mainGroup.splice(index, 1)[0];
+    walkOns[groupIndex].push(player);
+    renderGroups();
+  }
+
+  function moveToMain(groupIndex, index) {
+    const player = walkOns[groupIndex].splice(index, 1)[0];
+    mainGroup.push(player);
+    renderGroups();
+  }
+
+  function saveResults() {
+    const weekKey = getMondayDate();
+    const results = {
+      main: { label: document.getElementById("main-label").value, players: mainGroup },
+      walkon1: { label: document.getElementById("walkon1-label").value, players: walkOns[0] },
+      walkon2: { label: document.getElementById("walkon2-label").value, players: walkOns[1] },
+      walkon3: { label: document.getElementById("walkon3-label").value, players: walkOns[2] }
+    };
+    db.ref("results/" + weekKey).set(results).then(() => {
+      document.getElementById("save-status").innerText = "Lineup saved!";
+    });
   }
 
   loadPlayers();
   loadResponses();
   loadPlayerList();
-  checkLockState();
-  checkAuth();
 </script>
 
 </body>
