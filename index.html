@@ -53,7 +53,31 @@
     </section>
 
     <!-- Weekly Admin -->
-    <section id="weekly-admin" style="display:none;">
+    
+<!-- Weekly Admin -->
+<section id="weekly-admin" style="display:none;">
+  <h2>Weekly Admin View</h2>
+
+  <div>
+    <label>Main Group Play Courts: <input type="text" id="mainGroupLabel" placeholder="e.g., Courts 1–4" /></label>
+    <ul id="mainPlayList" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+  </div>
+
+  <div>
+    <label>Walk-On Court <input type="number" id="walkOnLabel1" value="1" min="1" style="width: 60px;" />:</label>
+    <ul id="walkOn1" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+
+    <label>Walk-On Court <input type="number" id="walkOnLabel2" value="2" min="1" style="width: 60px;" />:</label>
+    <ul id="walkOn2" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+
+    <label>Walk-On Court <input type="number" id="walkOnLabel3" value="3" min="1" style="width: 60px;" />:</label>
+    <ul id="walkOn3" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
+  </div>
+
+  <button onclick="saveLineup()">💾 Save Lineup</button>
+  <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
+</section>
+
       <h2>Weekly Admin View</h2>
 
       <div>
