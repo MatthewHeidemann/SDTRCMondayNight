@@ -18,7 +18,7 @@
       color: #222;
     }
     header {
-      background: white;
+      background: #008000;
       padding: 1rem;
       text-align: center;
       font-size: 1.5rem;
@@ -31,7 +31,7 @@
     nav {
       display: flex;
       justify-content: space-around;
-      background: #fff;
+      background: #008000;
       border-top: 1px solid #ddd;
       position: fixed;
       bottom: 0;
@@ -95,15 +95,22 @@
 </head>
 <body>
   <header>
-    Monday Night <span>🎾</span> Doubles
+    <h1 style="color: white; font-size: 1.5rem;">Monday Night <span style="color: white;">🎾</span> Doubles</h1>
   </header>
+  <nav style="display: flex; justify-content: space-around; background: #008000; border-bottom: 1px solid #ddd; padding: 0.5rem 0; position: sticky; top: 0; z-index: 1000;">
+    
+    <button onclick="showView('rsvp')">RSVP</button>
+    <button onclick="showView('results')">Results</button>
+    <button onclick="showView('adminLogin')">Admin</button>
+  <style>nav button { color: white; font-weight: 600; }</style>
+  </nav>
   <div id="rsvp" class="view active">
     <div class="card">
-      <h2>RSVP</h2>
+      <h2>RSVP <span id="rsvp-date" style="font-size: 1rem; font-weight: normal; color: #555;"></span></h2>
       <label>Select your name:</label>
-      <select id="player-name">
+      <select id=\"player-name\" style=\"margin-bottom: 1rem;\">
         <option value="">-- Choose your name --</option>
-      </select>
+      </select><br>
       <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label>
       <label><input type="radio" name="status" value="No"> No, not this week</label>
       <button onclick="submitResponse()">Submit</button>
@@ -130,11 +137,7 @@
       <button onclick="login()">Login</button>
     </div>
   </div>
-  <nav>
-    <button onclick="showView('rsvp')">RSVP</button>
-    <button onclick="showView('results')">Results</button>
-    <button onclick="showView('adminLogin')">Admin</button>
-  </nav>
+  
   <script>
     const db = firebase.database();
 
@@ -220,6 +223,10 @@
 
     loadPlayers();
     loadResponses();
+    // Display next Monday's date on the RSVP page
+    const rsvpDateEl = document.getElementById("rsvp-date");
+    const rsvpDate = new Date(getMondayDate());
+    rsvpDateEl.textContent = '(' + rsvpDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) + ')';
   </script>
 </body>
 </html>
