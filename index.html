@@ -76,10 +76,21 @@
 
       </div>
 
-      <button onclick="saveLineup()">💾 Save Lineup</button>
+      <button onclick="showManagePlayersPage()">👤 Manage Players</button>
+  <button onclick="saveLineup()">💾 Save Lineup</button>
       <button onclick="resetWeek()">🔁 Reset Week</button>
   <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
     </section>
+
+<!-- Manage Players Page -->
+<section id="manage-players-page" style="display:none;">
+  <h2>Manage Players</h2>
+  <input type="text" id="newPlayerInput" placeholder="Enter new player name" />
+  <button onclick="addPlayer()">➕ Add Player</button>
+  <ul id="playersList"></ul>
+  <button onclick="goBackToAdmin()">⬅️ Back to Admin</button>
+</section>
+
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -305,6 +316,56 @@
         loadResponses();
         loadAdminPlayers();
         setLockButtonText();
+      });
+    }
+
+
+    function showManagePlayersPage() {
+      document.getElementById('weekly-admin').style.display = 'none';
+      document.getElementById('manage-players-page').style.display = 'block';
+      loadPlayerList();
+    }
+
+    function goBackToAdmin() {
+      document.getElementById('manage-players-page').style.display = 'none';
+      document.getElementById('weekly-admin').style.display = 'block';
+    }
+
+    function loadPlayerList() {
+      const ul = document.getElementById("playersList");
+      ul.innerHTML = "";
+      db.ref("/users").once("value").then(snapshot => {
+        snapshot.forEach(child => {
+          const name = child.val();
+          const key = child.key;
+          const li = document.createElement("li");
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = name;
+          input.onchange = () => db.ref("/users/" + key).set(input.value);
+
+          const delBtn = document.createElement("button");
+          delBtn.textContent = "❌";
+          delBtn.onclick = () => {
+            if (confirm("Delete player '" + name + "'?")) {
+              db.ref("/users/" + key).remove().then(loadPlayerList);
+            }
+          };
+
+          li.appendChild(input);
+          li.appendChild(delBtn);
+          ul.appendChild(li);
+        });
+      });
+    }
+
+    function addPlayer() {
+      const name = document.getElementById("newPlayerInput").value.trim();
+      if (!name) return alert("Enter a player name.");
+      db.ref("/users").push(name).then(() => {
+        document.getElementById("newPlayerInput").value = "";
+        loadPlayerList();
       });
     }
 
