@@ -85,10 +85,13 @@
 <!-- Manage Players Page -->
 <section id="manage-players-page" style="display:none;">
   <h2>Manage Players</h2>
-  <input type="text" id="newPlayerInput" placeholder="Enter new player name" />
-  <button onclick="addPlayer()">➕ Add Player</button>
-  <ul id="playersList"></ul>
-  <button onclick="goBackToAdmin()">⬅️ Back to Admin</button>
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+    <input type="text" id="newPlayerInput" placeholder="Enter new player name" style="flex: 1; padding: 0.5rem;" />
+    <button onclick="addPlayer()">➕ Add</button>
+  </div>
+  <ul id="playersList" style="list-style: none; padding: 0;">
+  </ul>
+  <button onclick="goBackToAdmin()" style="margin-top: 1rem;">⬅️ Back to Admin</button>
 </section>
 
   </main>
@@ -335,14 +338,24 @@
       const ul = document.getElementById("playersList");
       ul.innerHTML = "";
       db.ref("/users").once("value").then(snapshot => {
+        const players = [];
         snapshot.forEach(child => {
-          const name = child.val();
-          const key = child.key;
+          players.push({ key: child.key, name: child.val() });
+        });
+
+        players.sort((a, b) => a.name.localeCompare(b.name));
+
+        players.forEach(({ key, name }) => {
           const li = document.createElement("li");
+          li.style.display = "flex";
+          li.style.alignItems = "center";
+          li.style.gap = "0.5rem";
+          li.style.marginBottom = "0.5rem";
 
           const input = document.createElement("input");
           input.type = "text";
           input.value = name;
+          input.style.flex = "1";
           input.onchange = () => db.ref("/users/" + key).set(input.value);
 
           const delBtn = document.createElement("button");
