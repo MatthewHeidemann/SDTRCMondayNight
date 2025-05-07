@@ -1,5 +1,4 @@
 <!-- Version: full-app-v5-wireframe-skin -->
-<!-- Version: index-v6-base -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,80 +7,191 @@
   <title>Monday Night Doubles</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
-function setupDragAndDrop() {
-  const groupIds = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groupIds.forEach(id => {
-    const el = document.getElementById(id);
-    el.ondragover = (e) => e.preventDefault();
-    el.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const dragged = document.querySelector(`[data-player='${name}']`);
-      if (dragged && el !== dragged.parentElement) {
-        el.appendChild(dragged);
-      }
-    };
-  });
+    function getPlayersFromGroup(groupId) {
+      return Array.from(document.getElementById(groupId).children).map(el => el.textContent.trim());
+    }
 
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
+    function getMondayDateKey() {
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      return monday.toISOString().split("T")[0];
+    }
 
-</script>
+    function setupDragAndDrop() {
+      const zones = document.querySelectorAll('.dropzone');
+      zones.forEach(zone => {
+        zone.ondragover = e => e.preventDefault();
+        zone.ondrop = e => {
+          e.preventDefault();
+          const data = e.dataTransfer.getData("text/plain");
+          const el = document.getElementById(data);
+          if (el) zone.appendChild(el);
+        };
+      });
+
+      const players = document.querySelectorAll('.player');
+      players.forEach(player => {
+        player.draggable = true;
+        player.id = "player-" + Math.random().toString(36).substr(2, 9);
+        player.ondragstart = e => {
+          e.dataTransfer.setData("text/plain", e.target.id);
+        };
+      });
+    }
+
+    document.getElementById("saveLineups").addEventListener("click", () => {
+      const weekKey = getMondayDateKey();
+      const lineups = {
+        main: getPlayersFromGroup("main"),
+        walkOn1: getPlayersFromGroup("walkOn1"),
+        walkOn2: getPlayersFromGroup("walkOn2"),
+        walkOn3: getPlayersFromGroup("walkOn3"),
+        labels: {
+          main: document.getElementById("label-main").value,
+          walkOn1: document.getElementById("label-walkOn1").value,
+          walkOn2: document.getElementById("label-walkOn2").value,
+          walkOn3: document.getElementById("label-walkOn3").value
+        }
+      };
+      db.ref("lineups/" + weekKey).set(lineups).then(() => {
+        alert("Lineups saved!");
+      }).catch(err => {
+        alert("Error saving lineups: " + err.message);
+      });
+    });
+
+    if (localStorage.getItem("isAdmin") === "true") {
+      document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+    }
+
+    setTimeout(setupDragAndDrop, 1500);
+
+  </script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js">
-function setupDragAndDrop() {
-  const groupIds = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groupIds.forEach(id => {
-    const el = document.getElementById(id);
-    el.ondragover = (e) => e.preventDefault();
-    el.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const dragged = document.querySelector(`[data-player='${name}']`);
-      if (dragged && el !== dragged.parentElement) {
-        el.appendChild(dragged);
-      }
-    };
-  });
+    function getPlayersFromGroup(groupId) {
+      return Array.from(document.getElementById(groupId).children).map(el => el.textContent.trim());
+    }
 
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
+    function getMondayDateKey() {
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      return monday.toISOString().split("T")[0];
+    }
 
-</script>
+    function setupDragAndDrop() {
+      const zones = document.querySelectorAll('.dropzone');
+      zones.forEach(zone => {
+        zone.ondragover = e => e.preventDefault();
+        zone.ondrop = e => {
+          e.preventDefault();
+          const data = e.dataTransfer.getData("text/plain");
+          const el = document.getElementById(data);
+          if (el) zone.appendChild(el);
+        };
+      });
+
+      const players = document.querySelectorAll('.player');
+      players.forEach(player => {
+        player.draggable = true;
+        player.id = "player-" + Math.random().toString(36).substr(2, 9);
+        player.ondragstart = e => {
+          e.dataTransfer.setData("text/plain", e.target.id);
+        };
+      });
+    }
+
+    document.getElementById("saveLineups").addEventListener("click", () => {
+      const weekKey = getMondayDateKey();
+      const lineups = {
+        main: getPlayersFromGroup("main"),
+        walkOn1: getPlayersFromGroup("walkOn1"),
+        walkOn2: getPlayersFromGroup("walkOn2"),
+        walkOn3: getPlayersFromGroup("walkOn3"),
+        labels: {
+          main: document.getElementById("label-main").value,
+          walkOn1: document.getElementById("label-walkOn1").value,
+          walkOn2: document.getElementById("label-walkOn2").value,
+          walkOn3: document.getElementById("label-walkOn3").value
+        }
+      };
+      db.ref("lineups/" + weekKey).set(lineups).then(() => {
+        alert("Lineups saved!");
+      }).catch(err => {
+        alert("Error saving lineups: " + err.message);
+      });
+    });
+
+    if (localStorage.getItem("isAdmin") === "true") {
+      document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+    }
+
+    setTimeout(setupDragAndDrop, 1500);
+
+  </script>
   <script src="./firebase.js">
-function setupDragAndDrop() {
-  const groupIds = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groupIds.forEach(id => {
-    const el = document.getElementById(id);
-    el.ondragover = (e) => e.preventDefault();
-    el.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const dragged = document.querySelector(`[data-player='${name}']`);
-      if (dragged && el !== dragged.parentElement) {
-        el.appendChild(dragged);
-      }
-    };
-  });
+    function getPlayersFromGroup(groupId) {
+      return Array.from(document.getElementById(groupId).children).map(el => el.textContent.trim());
+    }
 
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
+    function getMondayDateKey() {
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      return monday.toISOString().split("T")[0];
+    }
 
-</script>
+    function setupDragAndDrop() {
+      const zones = document.querySelectorAll('.dropzone');
+      zones.forEach(zone => {
+        zone.ondragover = e => e.preventDefault();
+        zone.ondrop = e => {
+          e.preventDefault();
+          const data = e.dataTransfer.getData("text/plain");
+          const el = document.getElementById(data);
+          if (el) zone.appendChild(el);
+        };
+      });
+
+      const players = document.querySelectorAll('.player');
+      players.forEach(player => {
+        player.draggable = true;
+        player.id = "player-" + Math.random().toString(36).substr(2, 9);
+        player.ondragstart = e => {
+          e.dataTransfer.setData("text/plain", e.target.id);
+        };
+      });
+    }
+
+    document.getElementById("saveLineups").addEventListener("click", () => {
+      const weekKey = getMondayDateKey();
+      const lineups = {
+        main: getPlayersFromGroup("main"),
+        walkOn1: getPlayersFromGroup("walkOn1"),
+        walkOn2: getPlayersFromGroup("walkOn2"),
+        walkOn3: getPlayersFromGroup("walkOn3"),
+        labels: {
+          main: document.getElementById("label-main").value,
+          walkOn1: document.getElementById("label-walkOn1").value,
+          walkOn2: document.getElementById("label-walkOn2").value,
+          walkOn3: document.getElementById("label-walkOn3").value
+        }
+      };
+      db.ref("lineups/" + weekKey).set(lineups).then(() => {
+        alert("Lineups saved!");
+      }).catch(err => {
+        alert("Error saving lineups: " + err.message);
+      });
+    });
+
+    if (localStorage.getItem("isAdmin") === "true") {
+      document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+    }
+
+    setTimeout(setupDragAndDrop, 1500);
+
+  </script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -174,6 +284,7 @@ function setupDragAndDrop() {
     <button onclick="showView('rsvp')">RSVP</button>
     <button onclick="showView('results')">Results</button>
     <button onclick="showView('adminLogin')">Admin</button>
+    <button id="weeklyAdminBtn" style="display:none;" onclick="showView('weeklyAdmin')">Weekly Admin</button>
   </nav>
   <div id="rsvp" class="view active">
     <div class="card">
@@ -195,29 +306,6 @@ function setupDragAndDrop() {
       <div id="out-list"></div>
     </div>
   </div>
-  
-  <div id="weeklyAdmin" class="view">
-    <div class="card">
-      <h2>Weekly Admin</h2>
-      <p>Use drag and drop to assign players to courts.</p>
-      <label>Main Play Label:</label>
-      <input type="text" id="main-label" placeholder="e.g. Courts 1–4">
-      <div id="main-play" class="card group-box" style="min-height: 40px;"></div>
-
-      <label>Walk-On Court 1 Label:</label>
-      <input type="text" id="walkon1-label" placeholder="Court 1">
-      <div id="walkon1" class="card group-box" style="min-height: 40px;"></div>
-
-      <label>Walk-On Court 2 Label:</label>
-      <input type="text" id="walkon2-label" placeholder="Court 2">
-      <div id="walkon2" class="card group-box" style="min-height: 40px;"></div>
-
-      <label>Walk-On Court 3 Label:</label>
-      <input type="text" id="walkon3-label" placeholder="Court 3">
-      <div id="walkon3" class="card group-box" style="min-height: 40px;"></div>
-    </div>
-  </div>
-
   <div id="results" class="view">
     <div class="card">
       <h2>Final Results</h2>
@@ -236,14 +324,9 @@ function setupDragAndDrop() {
     const db = firebase.database();
 
     function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const target = document.getElementById(id);
-  if (target) {
-    target.classList.add('active');
-    if (id === 'weeklyAdmin') {
-      setTimeout(() => setupDragAndDrop(), 100);  // ensure DOM elements exist
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
     }
-  }}
 
     function getMondayDate() {
       const today = new Date();
@@ -314,41 +397,100 @@ function setupDragAndDrop() {
       const input = document.getElementById("admin-password").value;
       if (input === "tennis123") {
         alert("Logged in successfully!");
+        document.getElementById("weeklyAdminBtn").style.display = "inline-block";
         showView("rsvp");
       } else {
         alert("Incorrect password.");
       }
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-  loadPlayers();
-  loadResponses();
-});
+    loadPlayers();
+    loadResponses();
   
-function setupDragAndDrop() {
-  const groupIds = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groupIds.forEach(id => {
-    const el = document.getElementById(id);
-    el.ondragover = (e) => e.preventDefault();
-    el.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const dragged = document.querySelector(`[data-player='${name}']`);
-      if (dragged && el !== dragged.parentElement) {
-        el.appendChild(dragged);
-      }
-    };
-  });
+    function getPlayersFromGroup(groupId) {
+      return Array.from(document.getElementById(groupId).children).map(el => el.textContent.trim());
+    }
 
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
+    function getMondayDateKey() {
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      return monday.toISOString().split("T")[0];
+    }
 
-</script>
-<footer style="text-align:center; font-size: 0.75rem; color: #999; margin-top: 2rem;">Version: index-v6-base</footer>
+    function setupDragAndDrop() {
+      const zones = document.querySelectorAll('.dropzone');
+      zones.forEach(zone => {
+        zone.ondragover = e => e.preventDefault();
+        zone.ondrop = e => {
+          e.preventDefault();
+          const data = e.dataTransfer.getData("text/plain");
+          const el = document.getElementById(data);
+          if (el) zone.appendChild(el);
+        };
+      });
+
+      const players = document.querySelectorAll('.player');
+      players.forEach(player => {
+        player.draggable = true;
+        player.id = "player-" + Math.random().toString(36).substr(2, 9);
+        player.ondragstart = e => {
+          e.dataTransfer.setData("text/plain", e.target.id);
+        };
+      });
+    }
+
+    document.getElementById("saveLineups").addEventListener("click", () => {
+      const weekKey = getMondayDateKey();
+      const lineups = {
+        main: getPlayersFromGroup("main"),
+        walkOn1: getPlayersFromGroup("walkOn1"),
+        walkOn2: getPlayersFromGroup("walkOn2"),
+        walkOn3: getPlayersFromGroup("walkOn3"),
+        labels: {
+          main: document.getElementById("label-main").value,
+          walkOn1: document.getElementById("label-walkOn1").value,
+          walkOn2: document.getElementById("label-walkOn2").value,
+          walkOn3: document.getElementById("label-walkOn3").value
+        }
+      };
+      db.ref("lineups/" + weekKey).set(lineups).then(() => {
+        alert("Lineups saved!");
+      }).catch(err => {
+        alert("Error saving lineups: " + err.message);
+      });
+    });
+
+    if (localStorage.getItem("isAdmin") === "true") {
+      document.getElementById("weeklyAdminBtn").style.display = "inline-block";
+    }
+
+    setTimeout(setupDragAndDrop, 1500);
+
+  </script>
+
+  <div id="weeklyAdmin" class="view">
+    <div class="card">
+      <h2>Weekly Admin View</h2>
+      <div class="group" id="main-group">
+        <h3>Main Play: <input type="text" id="label-main" value="Main Play"></h3>
+        <div class="dropzone" id="main"></div>
+      </div>
+      <div class="group" id="walkOn1-group">
+        <h3>Walk-On 1: <input type="text" id="label-walkOn1" value="Walk-On 1"></h3>
+        <div class="dropzone" id="walkOn1"></div>
+      </div>
+      <div class="group" id="walkOn2-group">
+        <h3>Walk-On 2: <input type="text" id="label-walkOn2" value="Walk-On 2"></h3>
+        <div class="dropzone" id="walkOn2"></div>
+      </div>
+      <div class="group" id="walkOn3-group">
+        <h3>Walk-On 3: <input type="text" id="label-walkOn3" value="Walk-On 3"></h3>
+        <div class="dropzone" id="walkOn3"></div>
+      </div>
+      <button id="saveLineups">Save Lineups</button>
+    </div>
+  </div>
+
 </body>
 </html>
