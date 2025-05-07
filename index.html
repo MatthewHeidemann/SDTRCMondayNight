@@ -73,7 +73,7 @@
       </div>
 
       <button onclick="saveLineup()">💾 Save Lineup</button>
-      <button onclick="lockWeek()">🔒 Lock Week</button>
+      <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
     </section>
   </main>
 
@@ -97,9 +97,6 @@
       players.forEach(name => {
         const li = document.createElement("li");
         li.textContent = name;
-        li.id = "player-" + name.replace(/\s+/g, "-").toLowerCase();
-        li.setAttribute("draggable", true);
-        li.setAttribute("ondragstart", "drag(event)");
         ul.appendChild(li);
       });
     }
@@ -179,7 +176,11 @@
           if (child.val() === "Yes") yesPlayers.push(child.key);
         });
         const mainPlay = yesPlayers.slice(0, Math.floor(yesPlayers.length / 4) * 4);
-        document.getElementById("mainPlayList").innerHTML = mainPlay.map(name => `<li>${name}</li>`).join("");
+        
+        mainPlayList.innerHTML = mainPlay.map(name => 
+          `<li id="admin-player-${name.replace(/\s+/g, '-').toLowerCase()}" draggable="true" ondragstart="drag(event)">${name}</li>`
+        ).join("");
+
       });
     }
 
@@ -208,6 +209,20 @@
       if (localStorage.getItem("isAdmin") === "true") showAdminView();
     });
   
+    function lockWeek() {
+      const mondayKey = getMondayKey();
+      const lockRef = db.ref("/state/" + mondayKey + "/locked");
+      lockRef.once("value").then(snapshot => {
+        const current = snapshot.val();
+        const newState = !current;
+        lockRef.set(newState).then(() => {
+          document.getElementById("lockBtn").textContent = newState ? "🔓 Unlock Week" : "🔒 Lock Week";
+          alert(newState ? "Week locked." : "Week unlocked.");
+        });
+      });
+    }
+
+
     function allowDrop(ev) {
       ev.preventDefault();
     }
