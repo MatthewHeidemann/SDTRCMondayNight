@@ -16,6 +16,100 @@
     h2 { margin-top: 2rem; font-size: 1.2rem; }
     .admin-group { min-height: 50px; border: 1px dashed #aaa; padding: 5px; }
   </style>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+      background: #222;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    main {
+      padding: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    section {
+      margin-bottom: 2rem;
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    label, select, input[type="radio"] {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.25rem 0.25rem 1rem 0;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      padding: 0.5rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      z-index: 100;
+    }
+
+    .admin-group {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-height: 50px;
+      padding: 0.5rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+
 </head>
 <body>
   <header>Monday Night Doubles 🎾</header>
@@ -46,7 +140,7 @@
     </section>
 
     <!-- Admin Login -->
-    <section id="admin-login">
+    <section id="admin-login" class="hidden">
       <h2>Admin Login</h2>
       <input type="password" id="adminPassword" placeholder="Enter admin password" />
       <button onclick="handleAdminLogin()">Login</button>
@@ -94,7 +188,8 @@
   <button onclick="goBackToAdmin()" style="margin-top: 1rem;">⬅️ Back to Admin</button>
 </section>
 
-  </main>
+  <div style="text-align:center;"><button onclick="document.getElementById('admin-login').classList.toggle('hidden')">🔑 Admin Login</button></div>
+</main>
 
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
