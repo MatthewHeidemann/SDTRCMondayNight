@@ -6,82 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monday Night Doubles</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
-function setupDragAndDrop() {
-  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groups.forEach(id => {
-    const container = document.getElementById(id);
-    container.ondragover = (e) => e.preventDefault();
-    container.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const draggedEl = document.querySelector(`[data-player='${name}']`);
-      if (draggedEl && container !== draggedEl.parentElement) {
-        container.appendChild(draggedEl);
-      }
-    };
-  });
-
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
-
-</script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js">
-function setupDragAndDrop() {
-  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groups.forEach(id => {
-    const container = document.getElementById(id);
-    container.ondragover = (e) => e.preventDefault();
-    container.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const draggedEl = document.querySelector(`[data-player='${name}']`);
-      if (draggedEl && container !== draggedEl.parentElement) {
-        container.appendChild(draggedEl);
-      }
-    };
-  });
-
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
-
-</script>
-  <script src="./firebase.js">
-function setupDragAndDrop() {
-  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groups.forEach(id => {
-    const container = document.getElementById(id);
-    container.ondragover = (e) => e.preventDefault();
-    container.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const draggedEl = document.querySelector(`[data-player='${name}']`);
-      if (draggedEl && container !== draggedEl.parentElement) {
-        container.appendChild(draggedEl);
-      }
-    };
-  });
-
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
-
-</script>
-  <style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script src="./firebase.js"></script>
+<style>
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
