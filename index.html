@@ -172,8 +172,12 @@
       const pwd = document.getElementById("adminPassword").value;
       if (pwd === "tennis123") {
         localStorage.setItem("isAdmin", "true");
+        showSection('weekly-admin');
         showAdminView();
       } else {
+        alert("Incorrect password");
+      }
+    } else {
         alert("Incorrect password");
       }
     }
