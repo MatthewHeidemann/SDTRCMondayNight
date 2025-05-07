@@ -166,6 +166,7 @@
       document.getElementById("admin-login").style.display = "none";
       document.getElementById("weekly-admin").style.display = "block";
       loadAdminPlayers();
+  setLockButtonText();
     }
 
     function loadAdminPlayers() {
@@ -209,6 +210,49 @@
       if (localStorage.getItem("isAdmin") === "true") showAdminView();
     });
   
+    function lockWeek() {
+      const mondayKey = getMondayKey();
+      const lockRef = db.ref("/state/" + mondayKey + "/locked");
+      lockRef.once("value").then(snapshot => {
+        const current = snapshot.val();
+        const newState = !current;
+        lockRef.set(newState).then(() => {
+          document.getElementById("lockBtn").textContent = newState ? "🔓 Unlock Week" : "🔒 Lock Week";
+          alert(newState ? "Week locked." : "Week unlocked.");
+        });
+      });
+    }
+
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+      const dropTarget = ev.target.closest("ul");
+      if (dragged && dropTarget) {
+        dropTarget.appendChild(dragged);
+      }
+    }
+
+  
+    function setLockButtonText() {
+      const mondayKey = getMondayKey();
+      db.ref("/state/" + mondayKey + "/locked").once("value").then(snapshot => {
+        const locked = snapshot.val();
+        const btn = document.getElementById("lockBtn");
+        btn.textContent = locked ? "🔓 Unlock Week" : "🔒 Lock Week";
+      });
+    }
+
+
     function lockWeek() {
       const mondayKey = getMondayKey();
       const lockRef = db.ref("/state/" + mondayKey + "/locked");
