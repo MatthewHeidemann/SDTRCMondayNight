@@ -2,5 +2,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  ...
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monday Night Doubles</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="./firebase.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8f8f8;
+      color: #222;
+    }
+    header {
+      background: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    header span {
+      color: #ffcc00;
+    }
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.5rem 0;
+    }
+    nav button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #555;
+    }
+    .view {
+      display: none;
+      padding: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .view.active {
+      display: block;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    select, input[type="text"], input[type="password"], button {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007aff;
+      color: white;
+      font-weight: 600;
+      border: none;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #eee;
+      color: #333;
+    }
+    .section-title {
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .player {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Monday Night <span>🎾</span> Doubles
+  </header>
+  <div id="rsvp" class="view active">
+    <div class="card">
+      <h2>RSVP</h2>
+      <label>Select your name:</label>
+      <select id="player-name">
+        <option value="">-- Choose your name --</option>
+      </select>
+      <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label>
+      <label><input type="radio" name="status" value="No"> No, not this week</label>
+      <button onclick="submitResponse()">Submit</button>
+    </div>
+    <div class="card">
+      <div class="section-title">In:</div>
+      <div id="in-list"></div>
+      <div class="section-title">Pending:</div>
+      <div id="pending-list"></div>
+      <div class="section-title">Out:</div>
+      <div id="out-list"></div>
+    </div>
+  </div>
+  <div id="results" class="view">
+    <div class="card">
+      <h2>Final Results</h2>
+      <p>Coming soon: Final lineup and court assignments.</p>
+    </div>
+  </div>
+  <div id="adminLogin" class="view">
+    <div class="card">
+      <h2>Admin Login</h2>
+      <input type="password" id="admin-password" placeholder="Admin Password">
+      <button onclick="login()">Login</button>
+    </div>
+  </div>
+  <nav>
+    <button onclick="showView('rsvp')">RSVP</button>
+    <button onclick="showView('results')">Results</button>
+    <button onclick="showView('adminLogin')">Admin</button>
+  </nav>
+  <script>
+    const db = firebase.database();
+
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function getMondayDate() {
+      const today = new Date();
+      const nextMonday = new Date(today.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)));
+      return nextMonday.toISOString().split('T')[0];
+    }
+
+    function submitResponse() {
+      const name = document.getElementById("player-name").value;
+      const statusInput = document.querySelector('input[name="status"]:checked');
+      if (!name || !statusInput) {
+        alert("Please select both name and status.");
+        return;
+      }
+      const status = statusInput.value;
+      const timestamp = Date.now();
+      const weekKey = getMondayDate();
+
+      db.ref("responses/" + weekKey + "/" + name).set({
+        name: name,
+        status: status,
+        timestamp: timestamp
+      });
+    }
+
+    function loadResponses() {
+      const weekKey = getMondayDate();
+      db.ref("responses/" + weekKey).on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const inList = [], pendingList = [], outList = [], yesResponses = [];
+        for (const name in data) {
+          if (data[name].status === "Yes") {
+            yesResponses.push({ name: name, timestamp: data[name].timestamp });
+          } else {
+            outList.push(name);
+          }
+        }
+        yesResponses.sort((a, b) => a.timestamp - b.timestamp);
+        const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
+        const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
+        const pendingPlayers = yesResponses.slice(fullGroupCount).map(entry => entry.name);
+
+        document.getElementById("in-list").innerHTML = inPlayers.map(n => `<div class="player">${n}</div>`).join("");
+        document.getElementById("pending-list").innerHTML = pendingPlayers.map(n => `<div class="player">${n}</div>`).join("");
+        document.getElementById("out-list").innerHTML = outList.map(n => `<div class="player">${n}</div>`).join("");
+      });
+    }
+
+    function loadPlayers() {
+      db.ref("users").once("value").then(snapshot => {
+        const players = snapshot.val();
+        const dropdown = document.getElementById("player-name");
+        dropdown.innerHTML = '<option value="">-- Choose your name --</option>';
+        if (!players) return;
+        const sortedKeys = Object.keys(players).sort((a, b) => players[a].localeCompare(players[b]));
+        for (const key of sortedKeys) {
+          const opt = document.createElement("option");
+          opt.value = players[key];
+          opt.text = players[key];
+          dropdown.appendChild(opt);
+        }
+      });
+    }
+
+    function login() {
+      const input = document.getElementById("admin-password").value;
+      if (input === "tennis123") {
+        alert("Logged in successfully!");
+        showView("rsvp");
+      } else {
+        alert("Incorrect password.");
+      }
+    }
+
+    loadPlayers();
+    loadResponses();
+  </script>
+</body>
 </html>
