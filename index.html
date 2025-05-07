@@ -67,7 +67,43 @@
 
     setTimeout(setupDragAndDrop, 1500);
 
-  </script>
+  
+    function loadInPlayersToAdmin() {
+      const weekKey = getMondayDateKey();
+      db.ref("responses/" + weekKey).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const yesResponses = [];
+        for (const name in data) {
+          if (data[name].status === "Yes") {
+            yesResponses.push({ name: name, timestamp: data[name].timestamp });
+          }
+        }
+        yesResponses.sort((a, b) => a.timestamp - b.timestamp);
+        const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
+        const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
+
+        const mainDiv = document.getElementById("main");
+        mainDiv.innerHTML = "";
+        inPlayers.forEach(name => {
+          const div = document.createElement("div");
+          div.className = "player";
+          div.textContent = name;
+          div.draggable = true;
+          div.id = "player-" + Math.random().toString(36).substr(2, 9);
+          div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
+          mainDiv.appendChild(div);
+        });
+      });
+    }
+
+    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+      showView("weeklyAdmin");
+      loadInPlayersToAdmin();
+    });
+
+</script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js">
     function getPlayersFromGroup(groupId) {
       return Array.from(document.getElementById(groupId).children).map(el => el.textContent.trim());
@@ -129,7 +165,43 @@
 
     setTimeout(setupDragAndDrop, 1500);
 
-  </script>
+  
+    function loadInPlayersToAdmin() {
+      const weekKey = getMondayDateKey();
+      db.ref("responses/" + weekKey).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const yesResponses = [];
+        for (const name in data) {
+          if (data[name].status === "Yes") {
+            yesResponses.push({ name: name, timestamp: data[name].timestamp });
+          }
+        }
+        yesResponses.sort((a, b) => a.timestamp - b.timestamp);
+        const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
+        const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
+
+        const mainDiv = document.getElementById("main");
+        mainDiv.innerHTML = "";
+        inPlayers.forEach(name => {
+          const div = document.createElement("div");
+          div.className = "player";
+          div.textContent = name;
+          div.draggable = true;
+          div.id = "player-" + Math.random().toString(36).substr(2, 9);
+          div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
+          mainDiv.appendChild(div);
+        });
+      });
+    }
+
+    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+      showView("weeklyAdmin");
+      loadInPlayersToAdmin();
+    });
+
+</script>
   <script src="./firebase.js">
     function getPlayersFromGroup(groupId) {
       return Array.from(document.getElementById(groupId).children).map(el => el.textContent.trim());
@@ -191,7 +263,43 @@
 
     setTimeout(setupDragAndDrop, 1500);
 
-  </script>
+  
+    function loadInPlayersToAdmin() {
+      const weekKey = getMondayDateKey();
+      db.ref("responses/" + weekKey).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const yesResponses = [];
+        for (const name in data) {
+          if (data[name].status === "Yes") {
+            yesResponses.push({ name: name, timestamp: data[name].timestamp });
+          }
+        }
+        yesResponses.sort((a, b) => a.timestamp - b.timestamp);
+        const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
+        const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
+
+        const mainDiv = document.getElementById("main");
+        mainDiv.innerHTML = "";
+        inPlayers.forEach(name => {
+          const div = document.createElement("div");
+          div.className = "player";
+          div.textContent = name;
+          div.draggable = true;
+          div.id = "player-" + Math.random().toString(36).substr(2, 9);
+          div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
+          mainDiv.appendChild(div);
+        });
+      });
+    }
+
+    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+      showView("weeklyAdmin");
+      loadInPlayersToAdmin();
+    });
+
+</script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -467,7 +575,43 @@
 
     setTimeout(setupDragAndDrop, 1500);
 
-  </script>
+  
+    function loadInPlayersToAdmin() {
+      const weekKey = getMondayDateKey();
+      db.ref("responses/" + weekKey).once("value").then(snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const yesResponses = [];
+        for (const name in data) {
+          if (data[name].status === "Yes") {
+            yesResponses.push({ name: name, timestamp: data[name].timestamp });
+          }
+        }
+        yesResponses.sort((a, b) => a.timestamp - b.timestamp);
+        const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
+        const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
+
+        const mainDiv = document.getElementById("main");
+        mainDiv.innerHTML = "";
+        inPlayers.forEach(name => {
+          const div = document.createElement("div");
+          div.className = "player";
+          div.textContent = name;
+          div.draggable = true;
+          div.id = "player-" + Math.random().toString(36).substr(2, 9);
+          div.ondragstart = e => e.dataTransfer.setData("text/plain", div.id);
+          mainDiv.appendChild(div);
+        });
+      });
+    }
+
+    document.getElementById("weeklyAdminBtn").addEventListener("click", () => {
+      showView("weeklyAdmin");
+      loadInPlayersToAdmin();
+    });
+
+</script>
 
   <div id="weeklyAdmin" class="view">
     <div class="card">
