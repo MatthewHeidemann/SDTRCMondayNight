@@ -22,7 +22,7 @@
   <main>
     <!-- RSVP Form -->
     <section id="rsvp">
-      <label for="playerSelect">Select Your Name:</label>
+      <label id="playerPrompt" for="playerSelect">Select Your Name:</label>
       <select id="playerSelect"><option value="">Loading players...</option></select>
 
       <div class="availability">
@@ -411,6 +411,22 @@
 
     window.addEventListener('beforeunload', () => {
       localStorage.removeItem("isAdmin");
+    });
+
+
+    function getUpcomingMondayLabel() {
+      const today = new Date();
+      const day = today.getDay();
+      const nextMonday = new Date(today);
+      nextMonday.setDate(today.getDate() + ((8 - day) % 7 || 7));
+      return nextMonday.toDateString();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const label = document.getElementById("playerPrompt");
+      if (label) {
+        label.textContent = "Update your status for Monday, " + getUpcomingMondayLabel();
+      }
     });
 
 </script>
