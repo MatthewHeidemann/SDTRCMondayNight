@@ -77,7 +77,8 @@
       </div>
 
       <button onclick="saveLineup()">💾 Save Lineup</button>
-      <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
+      <button id="managePlayersBtn" onclick="toggleUserManagement()" style="display:none;">👥 Manage Players List</button>
+  <button id="lockBtn" onclick="lockWeek()">🔒 Lock Week</button>
     </section>
 
 <!-- Application-Level Admin: User Management -->
@@ -333,6 +334,17 @@
     function removePlayer(key) {
       if (confirm("Are you sure you want to remove this player?")) {
         db.ref("/users/" + key).remove().then(loadUserList);
+      }
+    }
+
+
+    function toggleUserManagement() {
+      const section = document.getElementById("app-admin");
+      if (section.style.display === "none") {
+        section.style.display = "block";
+        loadUserList();
+      } else {
+        section.style.display = "none";
       }
     }
 
