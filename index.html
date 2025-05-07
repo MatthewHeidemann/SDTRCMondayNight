@@ -238,8 +238,11 @@ function setupDragAndDrop() {
   const target = document.getElementById(id);
   if (target) {
     target.classList.add('active');
-    if (id === 'weeklyAdmin') setupDragAndDrop();
+    if (id === 'weeklyAdmin') {
+      try { setupDragAndDrop(); } catch (e) { console.warn("Drag init failed", e); }
+    }
   }
+}
 }
 
     function getMondayDate() {
