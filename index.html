@@ -1,36 +1,39 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Monday Night Doubles 🎾</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
     header { background: white; padding: 1rem; text-align: center; font-size: 1.5rem; position: sticky; top: 0; border-bottom: 1px solid #ddd; }
-    main { max-width: 600px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
-    select, button { display: block; width: 100%; margin: 1rem 0; padding: 0.5rem; font-size: 1rem; }
+    main { max-width: 700px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    select, button, input[type="password"] { width: 100%; margin: 1rem 0; padding: 0.5rem; font-size: 1rem; }
     .availability label { margin-right: 1rem; }
     ul { padding: 0; list-style: none; }
+    li { background: #eee; padding: 5px; margin: 3px 0; border-radius: 4px; }
     h2 { margin-top: 2rem; font-size: 1.2rem; }
+    .admin-group { min-height: 50px; border: 1px dashed #aaa; padding: 5px; }
   </style>
 </head>
 <body>
   <header>Monday Night Doubles 🎾</header>
   <main>
+    <!-- RSVP Form -->
     <section id="rsvp">
       <label for="playerSelect">Select Your Name:</label>
-      <select id="playerSelect">
-        <option value="">Loading players...</option>
-      </select>
+      <select id="playerSelect"><option value="">Loading players...</option></select>
 
       <div class="availability">
-        <label><input type="radio" name="availability" value="Yes"> Yes</label>
-        <label><input type="radio" name="availability" value="No"> No</label>
+        <label><input type="radio" name="availability" value="Yes" /> Yes</label>
+        <label><input type="radio" name="availability" value="No" /> No</label>
       </div>
 
       <button id="submitBtn">Submit RSVP</button>
     </section>
 
+    <!-- RSVP Results -->
     <section id="results">
       <h2>In 🎾</h2>
       <ul id="inList"></ul>
@@ -40,6 +43,37 @@
 
       <h2>Out 🚫</h2>
       <ul id="outList"></ul>
+    </section>
+
+    <!-- Admin Login -->
+    <section id="admin-login">
+      <h2>Admin Login</h2>
+      <input type="password" id="adminPassword" placeholder="Enter admin password" />
+      <button onclick="handleAdminLogin()">Login</button>
+    </section>
+
+    <!-- Weekly Admin -->
+    <section id="weekly-admin" style="display:none;">
+      <h2>Weekly Admin View</h2>
+
+      <div>
+        <label>Main Play Group:</label>
+        <ul id="mainPlayList" class="admin-group" contenteditable="true"></ul>
+      </div>
+
+      <div>
+        <label>Walk-On Court 1:</label>
+        <ul id="walkOn1" class="admin-group" contenteditable="true"></ul>
+
+        <label>Walk-On Court 2:</label>
+        <ul id="walkOn2" class="admin-group" contenteditable="true"></ul>
+
+        <label>Walk-On Court 3:</label>
+        <ul id="walkOn3" class="admin-group" contenteditable="true"></ul>
+      </div>
+
+      <button onclick="saveLineup()">💾 Save Lineup</button>
+      <button onclick="lockWeek()">🔒 Lock Week</button>
     </section>
   </main>
 
@@ -118,10 +152,57 @@
       });
     }
 
+    function handleAdminLogin() {
+      const pwd = document.getElementById("adminPassword").value;
+      if (pwd === "tennis123") {
+        localStorage.setItem("isAdmin", "true");
+        showAdminView();
+      } else {
+        alert("Incorrect password");
+      }
+    }
+
+    function showAdminView() {
+      document.getElementById("admin-login").style.display = "none";
+      document.getElementById("weekly-admin").style.display = "block";
+      loadAdminPlayers();
+    }
+
+    function loadAdminPlayers() {
+      const mondayKey = getMondayKey();
+      db.ref("/responses/" + mondayKey).once("value").then(snapshot => {
+        const yesPlayers = [];
+        snapshot.forEach(child => {
+          if (child.val() === "Yes") yesPlayers.push(child.key);
+        });
+        const mainPlay = yesPlayers.slice(0, Math.floor(yesPlayers.length / 4) * 4);
+        document.getElementById("mainPlayList").innerHTML = mainPlay.map(name => `<li>${name}</li>`).join("");
+      });
+    }
+
+    function saveLineup() {
+      const mondayKey = getMondayKey();
+      const extractList = id => Array.from(document.querySelectorAll(`#${id} li`)).map(li => li.textContent.trim()).filter(Boolean);
+      const data = {
+        main: extractList("mainPlayList"),
+        walkOn1: extractList("walkOn1"),
+        walkOn2: extractList("walkOn2"),
+        walkOn3: extractList("walkOn3")
+      };
+      db.ref("/lineups/" + mondayKey).set(data).then(() => alert("Lineup saved."));
+    }
+
+    function lockWeek() {
+      const mondayKey = getMondayKey();
+      db.ref("/state/" + mondayKey + "/locked").set(true).then(() => alert("Week locked."));
+    }
+
     document.getElementById("submitBtn").addEventListener("click", submitRSVP);
+
     document.addEventListener("DOMContentLoaded", () => {
       loadPlayers();
       loadResponses();
+      if (localStorage.getItem("isAdmin") === "true") showAdminView();
     });
   </script>
 </body>
