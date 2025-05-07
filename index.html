@@ -6,9 +6,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monday Night Doubles</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="./firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
+function setupDragAndDrop() {
+  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
+  groups.forEach(id => {
+    const container = document.getElementById(id);
+    container.ondragover = (e) => e.preventDefault();
+    container.ondrop = (e) => {
+      e.preventDefault();
+      const name = e.dataTransfer.getData('text/plain');
+      const draggedEl = document.querySelector(`[data-player='${name}']`);
+      if (draggedEl && container !== draggedEl.parentElement) {
+        container.appendChild(draggedEl);
+      }
+    };
+  });
+
+  document.querySelectorAll('[data-player]').forEach(el => {
+    el.draggable = true;
+    el.ondragstart = (e) => {
+      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
+    };
+  });
+}
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js">
+function setupDragAndDrop() {
+  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
+  groups.forEach(id => {
+    const container = document.getElementById(id);
+    container.ondragover = (e) => e.preventDefault();
+    container.ondrop = (e) => {
+      e.preventDefault();
+      const name = e.dataTransfer.getData('text/plain');
+      const draggedEl = document.querySelector(`[data-player='${name}']`);
+      if (draggedEl && container !== draggedEl.parentElement) {
+        container.appendChild(draggedEl);
+      }
+    };
+  });
+
+  document.querySelectorAll('[data-player]').forEach(el => {
+    el.draggable = true;
+    el.ondragstart = (e) => {
+      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
+    };
+  });
+}
+
+</script>
+  <script src="./firebase.js">
+function setupDragAndDrop() {
+  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
+  groups.forEach(id => {
+    const container = document.getElementById(id);
+    container.ondragover = (e) => e.preventDefault();
+    container.ondrop = (e) => {
+      e.preventDefault();
+      const name = e.dataTransfer.getData('text/plain');
+      const draggedEl = document.querySelector(`[data-player='${name}']`);
+      if (draggedEl && container !== draggedEl.parentElement) {
+        container.appendChild(draggedEl);
+      }
+    };
+  });
+
+  document.querySelectorAll('[data-player]').forEach(el => {
+    el.draggable = true;
+    el.ondragstart = (e) => {
+      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
+    };
+  });
+}
+
+</script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -18,7 +90,7 @@
       color: #222;
     }
     header {
-      background: white;
+      background: #008000;
       padding: 1rem;
       text-align: center;
       font-size: 1.5rem;
@@ -31,7 +103,7 @@
     nav {
       display: flex;
       justify-content: space-around;
-      background: #fff;
+      background: #008000;
       border-top: 1px solid #ddd;
       position: fixed;
       bottom: 0;
@@ -95,18 +167,21 @@
 </head>
 <body>
   <header>
-    Monday Night <span>🎾</span> Doubles
+    <h1 style="color: white; font-size: 1.5rem;">Monday Night <span style="color: white;">🎾</span> Doubles</h1>
   </header>
-  <nav style="display: flex; justify-content: space-around; background: #fff; border-bottom: 1px solid #ddd; padding: 0.5rem 0; position: sticky; top: 0; z-index: 1000;">
+  <nav style="display: flex; justify-content: space-around; background: #008000; border-bottom: 1px solid #ddd; padding: 0.5rem 0; position: sticky; top: 0; z-index: 1000;">
+    
     <button onclick="showView('rsvp')">RSVP</button>
+    <button onclick=\"showView('weeklyAdmin')\">Weekly Admin</button>
     <button onclick="showView('results')">Results</button>
     <button onclick="showView('adminLogin')">Admin</button>
+  <style>nav button { color: white; font-weight: 600; }</style>
   </nav>
   <div id="rsvp" class="view active">
     <div class="card">
-      <h2>RSVP</h2>
+      <h2>RSVP <span id="rsvp-date" style="font-size: 1rem; font-weight: normal; color: #555;"></span></h2>
       <label>Select your name:</label>
-      <select id="player-name">
+      <select id=\"player-name\" style=\"margin-bottom: 1rem;\">
         <option value="">-- Choose your name --</option>
       </select>
       <label><input type="radio" name="status" value="Yes"> Yes, I'm in</label>
@@ -122,6 +197,25 @@
       <div id="out-list"></div>
     </div>
   </div>
+  
+<div id="weeklyAdmin" class="view">
+  <div class="card">
+    <h2>Weekly Admin</h2>
+    <button onclick="lockWeek()">Lock Submissions for the Week</button>
+    <div id="lock-confirm" style="margin: 10px 0; color: green;"></div>
+    <h3>Main Play Group</h3>
+    <input type="text" id="main-label" placeholder="e.g. Courts 1–4">
+    <div id="main-play" class="card group-box"></div>
+    <h3>Walk-On Courts</h3>
+    <input type="text" id="walkon1-label" placeholder="Court 1 Label">
+    <div id="walkon1" class="card group-box"></div>
+    <input type="text" id="walkon2-label" placeholder="Court 2 Label">
+    <div id="walkon2" class="card group-box"></div>
+    <input type="text" id="walkon3-label" placeholder="Court 3 Label">
+    <div id="walkon3" class="card group-box"></div>
+  </div>
+</div>
+
   <div id="results" class="view">
     <div class="card">
       <h2>Final Results</h2>
@@ -140,9 +234,16 @@
     const db = firebase.database();
 
     function showView(id) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.add('active');
+    if (id === 'weeklyAdmin') {
+      try { setupDragAndDrop(); } catch (e) { console.warn("Drag init failed", e); }
     }
+  }
+}
+}
 
     function getMondayDate() {
       const today = new Date();
@@ -219,8 +320,39 @@
       }
     }
 
-    loadPlayers();
-    loadResponses();
-  </script>
+    window.addEventListener("DOMContentLoaded", () => {
+  loadPlayers();
+  loadResponses();
+});
+  setupDragAndDrop();
+    // Display next Monday's date on the RSVP page
+    const rsvpDateEl = document.getElementById("rsvp-date");
+    const rsvpDate = new Date(getMondayDate());
+    rsvpDateEl.textContent = '(' + rsvpDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) + ')';
+  
+function setupDragAndDrop() {
+  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
+  groups.forEach(id => {
+    const container = document.getElementById(id);
+    container.ondragover = (e) => e.preventDefault();
+    container.ondrop = (e) => {
+      e.preventDefault();
+      const name = e.dataTransfer.getData('text/plain');
+      const draggedEl = document.querySelector(`[data-player='${name}']`);
+      if (draggedEl && container !== draggedEl.parentElement) {
+        container.appendChild(draggedEl);
+      }
+    };
+  });
+
+  document.querySelectorAll('[data-player]').forEach(el => {
+    el.draggable = true;
+    el.ondragstart = (e) => {
+      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
+    };
+  });
+}
+
+</script>
 </body>
 </html>
