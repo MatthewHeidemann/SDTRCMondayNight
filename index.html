@@ -230,129 +230,95 @@ function setupDragAndDrop() {
     </div>
   </div>
   
-  <script>
-    const db = firebase.database();
+  
+<script>
+  const db = firebase.database();
 
-    function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const target = document.getElementById(id);
-  if (target) {
-    target.classList.add('active');
-    if (id === 'weeklyAdmin') {
-      try { setupDragAndDrop(); } catch (e) { console.warn("Drag init failed", e); }
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function getMondayDate() {
+    const today = new Date();
+    const nextMonday = new Date(today.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)));
+    return nextMonday.toISOString().split('T')[0];
+  }
+
+  function submitResponse() {
+    const name = document.getElementById("player-name").value;
+    const statusInput = document.querySelector('input[name="status"]:checked');
+    if (!name || !statusInput) {
+      alert("Please select both name and status.");
+      return;
+    }
+    const status = statusInput.value;
+    const timestamp = Date.now();
+    const weekKey = getMondayDate();
+
+    db.ref("responses/" + weekKey + "/" + name).set({
+      name: name,
+      status: status,
+      timestamp: timestamp
+    });
+  }
+
+  function loadResponses() {
+    const weekKey = getMondayDate();
+    db.ref("responses/" + weekKey).on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      const inList = [], pendingList = [], outList = [], yesResponses = [];
+      for (const name in data) {
+        if (data[name].status === "Yes") {
+          yesResponses.push({ name: name, timestamp: data[name].timestamp });
+        } else {
+          outList.push(name);
+        }
+      }
+      yesResponses.sort((a, b) => a.timestamp - b.timestamp);
+      const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
+      const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
+      const pendingPlayers = yesResponses.slice(fullGroupCount).map(entry => entry.name);
+
+      document.getElementById("in-list").innerHTML = inPlayers.map(n => `<div class="player">${n}</div>`).join("");
+      document.getElementById("pending-list").innerHTML = pendingPlayers.map(n => `<div class="player">${n}</div>`).join("");
+      document.getElementById("out-list").innerHTML = outList.map(n => `<div class="player">${n}</div>`).join("");
+    });
+  }
+
+  function loadPlayers() {
+    db.ref("users").once("value").then(snapshot => {
+      const players = snapshot.val();
+      const dropdown = document.getElementById("player-name");
+      dropdown.innerHTML = '<option value="">-- Choose your name --</option>';
+      if (!players) return;
+      const sortedKeys = Object.keys(players).sort((a, b) => players[a].localeCompare(players[b]));
+      for (const key of sortedKeys) {
+        const opt = document.createElement("option");
+        opt.value = players[key];
+        opt.text = players[key];
+        dropdown.appendChild(opt);
+      }
+    });
+  }
+
+  function login() {
+    const input = document.getElementById("admin-password").value;
+    if (input === "tennis123") {
+      alert("Logged in successfully!");
+      showView("rsvp");
+    } else {
+      alert("Incorrect password.");
     }
   }
-}
-}
 
-    function getMondayDate() {
-      const today = new Date();
-      const nextMonday = new Date(today.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)));
-      return nextMonday.toISOString().split('T')[0];
-    }
-
-    function submitResponse() {
-      const name = document.getElementById("player-name").value;
-      const statusInput = document.querySelector('input[name="status"]:checked');
-      if (!name || !statusInput) {
-        alert("Please select both name and status.");
-        return;
-      }
-      const status = statusInput.value;
-      const timestamp = Date.now();
-      const weekKey = getMondayDate();
-
-      db.ref("responses/" + weekKey + "/" + name).set({
-        name: name,
-        status: status,
-        timestamp: timestamp
-      });
-    }
-
-    function loadResponses() {
-      const weekKey = getMondayDate();
-      db.ref("responses/" + weekKey).on("value", (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
-
-        const inList = [], pendingList = [], outList = [], yesResponses = [];
-        for (const name in data) {
-          if (data[name].status === "Yes") {
-            yesResponses.push({ name: name, timestamp: data[name].timestamp });
-          } else {
-            outList.push(name);
-          }
-        }
-        yesResponses.sort((a, b) => a.timestamp - b.timestamp);
-        const fullGroupCount = Math.floor(yesResponses.length / 4) * 4;
-        const inPlayers = yesResponses.slice(0, fullGroupCount).map(entry => entry.name);
-        const pendingPlayers = yesResponses.slice(fullGroupCount).map(entry => entry.name);
-
-        document.getElementById("in-list").innerHTML = inPlayers.map(n => `<div class="player">${n}</div>`).join("");
-        document.getElementById("pending-list").innerHTML = pendingPlayers.map(n => `<div class="player">${n}</div>`).join("");
-        document.getElementById("out-list").innerHTML = outList.map(n => `<div class="player">${n}</div>`).join("");
-      });
-    }
-
-    function loadPlayers() {
-      db.ref("users").once("value").then(snapshot => {
-        const players = snapshot.val();
-        const dropdown = document.getElementById("player-name");
-        dropdown.innerHTML = '<option value="">-- Choose your name --</option>';
-        if (!players) return;
-        const sortedKeys = Object.keys(players).sort((a, b) => players[a].localeCompare(players[b]));
-        for (const key of sortedKeys) {
-          const opt = document.createElement("option");
-          opt.value = players[key];
-          opt.text = players[key];
-          dropdown.appendChild(opt);
-        }
-      });
-    }
-
-    function login() {
-      const input = document.getElementById("admin-password").value;
-      if (input === "tennis123") {
-        alert("Logged in successfully!");
-        showView("rsvp");
-      } else {
-        alert("Incorrect password.");
-      }
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-  loadPlayers();
-  loadResponses();
-});
-  setupDragAndDrop();
-    // Display next Monday's date on the RSVP page
-    const rsvpDateEl = document.getElementById("rsvp-date");
-    const rsvpDate = new Date(getMondayDate());
-    rsvpDateEl.textContent = '(' + rsvpDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) + ')';
-  
-function setupDragAndDrop() {
-  const groups = ['main-play', 'walkon1', 'walkon2', 'walkon3'];
-  groups.forEach(id => {
-    const container = document.getElementById(id);
-    container.ondragover = (e) => e.preventDefault();
-    container.ondrop = (e) => {
-      e.preventDefault();
-      const name = e.dataTransfer.getData('text/plain');
-      const draggedEl = document.querySelector(`[data-player='${name}']`);
-      if (draggedEl && container !== draggedEl.parentElement) {
-        container.appendChild(draggedEl);
-      }
-    };
+  window.addEventListener("DOMContentLoaded", () => {
+    loadPlayers();
+    loadResponses();
   });
-
-  document.querySelectorAll('[data-player]').forEach(el => {
-    el.draggable = true;
-    el.ondragstart = (e) => {
-      e.dataTransfer.setData('text/plain', el.getAttribute('data-player'));
-    };
-  });
-}
-
 </script>
+
 </body>
 </html>
