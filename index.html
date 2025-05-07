@@ -58,18 +58,18 @@
 
       <div>
         <label>Main Play Group:</label>
-        <ul id="mainPlayList" class="admin-group" contenteditable="true"></ul>
+        <ul id="mainPlayList" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
       </div>
 
       <div>
         <label>Walk-On Court 1:</label>
-        <ul id="walkOn1" class="admin-group" contenteditable="true"></ul>
+        <ul id="walkOn1" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
 
         <label>Walk-On Court 2:</label>
-        <ul id="walkOn2" class="admin-group" contenteditable="true"></ul>
+        <ul id="walkOn2" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
 
         <label>Walk-On Court 3:</label>
-        <ul id="walkOn3" class="admin-group" contenteditable="true"></ul>
+        <ul id="walkOn3" class="admin-group" ondrop="drop(event)" ondragover="allowDrop(event)"></ul>
       </div>
 
       <button onclick="saveLineup()">💾 Save Lineup</button>
@@ -97,6 +97,9 @@
       players.forEach(name => {
         const li = document.createElement("li");
         li.textContent = name;
+        li.id = "player-" + name.replace(/\s+/g, "-");
+        li.draggable = true;
+        li.ondragstart = drag;
         ul.appendChild(li);
       });
     }
@@ -204,6 +207,26 @@
       loadResponses();
       if (localStorage.getItem("isAdmin") === "true") showAdminView();
     });
+  
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+      if (dragged && ev.target.tagName === "UL") {
+        ev.target.appendChild(dragged);
+      } else if (dragged && ev.target.tagName === "LI") {
+        ev.target.parentNode.insertBefore(dragged, ev.target.nextSibling);
+      }
+    }
+
   </script>
 </body>
 </html>
